@@ -774,9 +774,9 @@
                 generateBtn.disabled = true;
                 updateLoadingMessage('Sedang menyiapkan permintaan...');
                 
-                let prompt = '';
                 let defaultCtaText = selectedCtaSelect.value === 'default' ? `PS: Saya juga buka kelas AI untuk kamu yang benar-benar awam!\nKeunggulannya: setiap hari ada postingan tutorial terbaru, update terus.\nBelajar bisa kapan saja mulai jam 08.00 sampai 00.00 WIB.\nBebas belajar sampai bisa, sistem bayar per 10 hari.\nDan yang paling penting, harganya terjangkau dan disesuaikan.\nLangsung klik: https://lynk.id/vdmax` : params.customCta;
 
+                let prompt = '';
                 // Dynamic prompt construction based on format and other parameters
                 switch(params.outputFormat) {
                     case 'thread':
@@ -826,17 +826,23 @@
                     const generatedData = JSON.parse(jsonMatch[0]);
                     
                     let imagePrompt = '';
+                    let previewMainContent = '';
+                    let previewPrompts = [];
 
                     // Render based on output format
                     if (params.outputFormat === 'thread') {
                         threadsContainer.innerHTML = '';
-                        generatedData.threads.forEach((thread, index) => {
-                            const threadElement = createThread(thread, index, false, defaultCtaText);
-                            threadsContainer.appendChild(threadElement);
-                        });
-                        imagePrompt = buildImagePromptFromThread(generatedData.threads[0].hook, params.topic, params.keywords);
-                        renderPostingPreview(generatedData.threads[0].hook, generatedData.threads[0].prompts, defaultCtaText, 'thread');
-
+                        if (generatedData.threads && generatedData.threads.length > 0) {
+                            generatedData.threads.forEach((thread, index) => {
+                                const threadElement = createThread(thread, index, false, defaultCtaText);
+                                threadsContainer.appendChild(threadElement);
+                            });
+                            previewMainContent = generatedData.threads[0].hook;
+                            previewPrompts = generatedData.threads[0].prompts;
+                            imagePrompt = buildImagePromptFromThread(generatedData.threads[0].hook, params.topic, params.keywords);
+                        } else {
+                             throw new Error('Tidak ada thread yang dihasilkan.');
+                        }
                     } else if (params.outputFormat === 'blog-outline') {
                         threadsContainer.innerHTML = `
                             <div class="thread-card">
@@ -845,8 +851,8 @@
                                 <button class="btn btn-sm btn-outline-primary mt-3" onclick="copyToClipboard(document.querySelector('.thread-card .prompt-item.editable-content').innerText)"><i class="bi bi-clipboard me-1"></i> Salin Outline</button>
                             </div>
                         `;
+                        previewMainContent = generatedData.outline;
                         imagePrompt = buildImagePromptFromBlogOutline(generatedData.outline, params.topic, params.keywords);
-                        renderPostingPreview(generatedData.outline, [], defaultCtaText, 'blog');
 
                     } else if (params.outputFormat === 'caption') {
                         threadsContainer.innerHTML = `
@@ -856,13 +862,16 @@
                                 <button class="btn btn-sm btn-outline-primary mt-3" onclick="copyToClipboard(document.querySelector('.thread-card .prompt-item.editable-content').innerText)"><i class="bi bi-clipboard me-1"></i> Salin Caption</button>
                             </div>
                         `;
+                        previewMainContent = generatedData.caption;
                         imagePrompt = buildImagePromptFromCaption(generatedData.caption, params.topic, params.keywords);
-                        renderPostingPreview(generatedData.caption, [], defaultCtaText, 'caption');
                     }
 
                     // Display image prompt section
                     imageGenPromptTextarea.value = imagePrompt;
                     imagePromptSection.style.display = 'block';
+
+                    // Render posting preview
+                    renderPostingPreview(previewMainContent, previewPrompts, defaultCtaText, params.outputFormat);
 
                     // Update last generated time
                     const now = new Date();
@@ -886,12 +895,7 @@
                     showError(`Gagal menghasilkan konten: ${error.message}. Coba lagi atau sesuaikan prompt.`);
                     
                     // Fallback to sample threads if error, based on selected format/topic
-                    if (params.outputFormat === 'thread') {
-                        generateSampleThreads(params.topic, defaultCtaText);
-                    } else {
-                        // For other formats, a generic error message or empty state might be better
-                        threadsContainer.innerHTML = `<div class="alert alert-warning text-center" role="alert">Gagal menghasilkan konten. Silakan coba lagi atau cek pengaturan API Key Anda.</div>`;
-                    }
+                    generateSampleThreads(params.topic, defaultCtaText); // Use default CTA here too
                 } finally {
                     // Sembunyikan loading state
                     loadingSpinner.classList.remove('active');
@@ -1027,26 +1031,16 @@
                 const ctaSection = document.createElement('div');
                 ctaSection.className = 'cta-section';
                 
-                const ctaDisplay = ctaText || selectedCtaSelect.value === 'default' ? 
-                    `PS: Saya juga buka kelas AI untuk kamu yang benar-benar awam!<br>
-                    Keunggulannya: setiap hari ada postingan tutorial terbaru, update terus.<br>
-                    Belajar bisa kapan saja mulai jam 08.00 sampai 00.00 WIB.<br>
-                    Bebas belajar sampai bisa, sistem bayar per 10 hari.<br>
-                    Dan yang paling penting, harganya terjangkau dan disesuaikan.<br>
-                    Langsung klik: https://lynk.id/vdmax` :
-                    selectedCtaSelect.value;
+                const ctaDisplay = ctaText.replace(/\n/g, '<br>'); // Use the plain text CTA, convert newlines for HTML display
 
                 const ctaTextElement = document.createElement('div');
-                ctaTextElement.innerHTML = ctaDisplay.replace(/\n/g, '<br>');
+                ctaTextElement.innerHTML = ctaDisplay;
                 
                 const ctaCopyBtn = document.createElement('button');
                 ctaCopyBtn.className = 'btn btn-sm btn-outline-primary';
                 ctaCopyBtn.innerHTML = '<i class="bi bi-clipboard me-1"></i> Salin CTA';
                 ctaCopyBtn.addEventListener('click', function() {
-                    const fullCta = ctaText || selectedCtaSelect.value === 'default' ? 
-                        `PS: Saya juga buka kelas AI untuk kamu yang benar-benar awam!\nKeunggulannya: setiap hari ada postingan tutorial terbaru, update terus.\nBelajar bisa kapan saja mulai jam 08.00 sampai 00.00 WIB.\nBebas belajar sampai bisa, sistem bayar per 10 hari.\nDan yang paling penting, harganya terjangkau dan disesuaikan.\nLangsung klik: https://lynk.id/vdmax` :
-                        selectedCtaSelect.value;
-                    copyToClipboard(fullCta);
+                    copyToClipboard(ctaText); // Copy the original plain text CTA
                 });
                 
                 const ctaContainer = document.createElement('div');
@@ -1072,9 +1066,7 @@
                         promptsContainer.querySelectorAll('.editable-content').forEach(p => {
                             fullThreadText += p.innerText + '\n';
                         });
-                        fullThreadText += '\n' + (ctaText || selectedCtaSelect.value === 'default' ? 
-                            `PS: Saya juga buka kelas AI untuk kamu yang benar-benar awam!\nKeunggulannya: setiap hari ada postingan tutorial terbaru, update terus.\nBelajar bisa kapan saja mulai jam 08.00 sampai 00.00 WIB.\nBebas belajar sampai bisa, sistem bayar per 10 hari.\nDan yang paling penting, harganya terjangkau dan disesuaikan.\nLangsung klik: https://lynk.id/vdmax` :
-                            selectedCtaSelect.value);
+                        fullThreadText += '\n' + ctaText; // Append the plain text CTA
                         copyToClipboard(fullThreadText);
                     });
                     threadCard.appendChild(fullCopyBtn);
@@ -1098,15 +1090,15 @@
                     default: style = ' in a clear, modern, and informative graphic design style'; break;
                 }
 
-                let focus = `The image should represent "${subject}" related to ${topic}${keywords ? ` and ${keywords}` : ''}.`;
+                let focus = `The image should represent "${subject}" related to teknologi.`; // Changed from dynamic topic to fixed 'teknologi' as per original image text
                 let details = `Include elements that convey learning, technology, and practical application. Avoid text within the image. Focus on a clear, single focal point.`;
 
                 return `${basePrompt} ${focus} ${details}${style}.`;
             }
 
             function buildImagePromptFromBlogOutline(outline, topic, keywords) {
-                const titleMatch = outline.match(/^([^\n]+)/);
-                const title = titleMatch ? titleMatch[1] : '';
+                const titleMatch = outline.match(/^Judul Blog Post:\s*([^\n]+)/); // Adjusted regex to match the exact string
+                const title = titleMatch ? titleMatch[1].trim() : (outline.split('\n')[0] || '').replace('Judul Blog Post:', '').trim();
                 return `Generate a captivating blog post header image for an article titled "${title}". The image should be professional, relevant to ${topic}${keywords ? ` and ${keywords}` : ''}, and visually engaging. Consider abstract representations of data, technology, or learning. Aspect ratio 16:9.`;
             }
 
@@ -1121,22 +1113,27 @@
                 
                 let twitterText = '';
                 let instagramText = '';
-                let cleanedCta = cta.replace(/<br>/g, '\n');
+                let cleanedCta = cta; // cta parameter here should already be the plain text version
 
                 if (format === 'thread') {
-                    twitterText = `🚨 ${mainContent}\n\n`;
+                    // Twitter/X Preview
+                    twitterText = `${mainContent}\n\n`; // Removed emoji from start
                     prompts.forEach(p => twitterText += `${p}\n`);
-                    twitterText += `\n${cleanedCta}\n\n#AI #TipsAI #Tutorial`;
+                    twitterText += `\n${cleanedCda}\n\n#AI #TipsAI #Tutorial`;
 
-                    instagramText = `*${mainContent}*\n\n`;
-                    prompts.forEach(p => instagramText += `${p.replace('• ', '➡️ ')}\n`);
+                    // Instagram Preview
+                    instagramText = `*${mainContent}*\n\n`; // Kept asterisks for bolding, removed emoji from start
+                    prompts.forEach(p => instagramText += `${p.replace('• ', '')}\n`); // Removed bullet emoji (➡️)
                     instagramText += `\n${cleanedCta}\n\n#AI #Tips #Productivity`;
-                } else if (format === 'blog') {
-                    twitterText = `🔥 Artikel Baru: ${mainContent.split('\n')[0].replace('Judul Blog Post', '')}\n\nBaca outline lengkapnya untuk memahami struktur mendalam.\n\n${cleanedCta}\n\n#BlogAI #KontenAI`;
-                    instagramText = `✨ *${mainContent.split('\n')[0].replace('Judul Blog Post', '')}*\n\n${mainContent.split('\n')[2].replace('I. Pendahuluan', '').trim()}\n\nLihat struktur lengkapnya untuk panduan menulis Anda!\n\n${cleanedCta}\n\n#Blog #Outline #AIWriting`;
+                } else if (format === 'blog-outline') {
+                    const blogTitle = mainContent.split('\n')[0].replace('Judul Blog Post:', '').trim();
+                    const blogIntro = mainContent.split('\n')[2] ? mainContent.split('\n')[2].replace('I. Pendahuluan', '').trim() : '';
+
+                    twitterText = `Artikel Baru: ${blogTitle}\n\nBaca outline lengkapnya untuk memahami struktur mendalam.\n\n${cleanedCta}\n\n#BlogAI #KontenAI`;
+                    instagramText = `*${blogTitle}*\n\n${blogIntro}\n\nLihat struktur lengkapnya untuk panduan menulis Anda!\n\n${cleanedCta}\n\n#Blog #Outline #AIWriting`;
                 } else if (format === 'caption') {
                     twitterText = mainContent;
-                    instagramText = mainContent.replace(/#(\w+)/g, '👇 #$1'); // Example: move hashtags to bottom if not already
+                    instagramText = mainContent.replace(/#(\w+)/g, '#$1'); // Ensure no extra emojis like 👇 are added around hashtags
                 }
 
                 // Trim to typical character limits for preview
@@ -1149,6 +1146,10 @@
                 let threads = [];
                 let ctaUsed = ctaText || `PS: Saya juga buka kelas AI untuk kamu yang benar-benar awam!\nKeunggulannya: setiap hari ada postingan tutorial terbaru, update terus.\nBelajar bisa kapan saja mulai jam 08.00 sampai 00.00 WIB.\nBebas belajar sampai bisa, sistem bayar per 10 hari.\nDan yang paling penting, harganya terjangkau dan disesuaikan.\nLangsung klik: https://lynk.id/vdmax`;
                 
+                let sampleMainContent = '';
+                let samplePrompts = [];
+                let sampleImagePrompt = '';
+
                 // Simplified sample data for various formats
                 if (selectedOutputFormat === 'thread') {
                     switch(topic) {
@@ -1180,19 +1181,27 @@
                                 }
                             ];
                             break;
-                            // Add more cases for other topics similar to original code
                         default: // umum
                             threads = [
                                 {
-                                    hook: "Pengen mulai pakai AI tapi bingung dari mana? Ini 7 langkah mudah untuk pemula di dunia AI.",
+                                    hook: "Ponsel pintar Anda mulai terasa lambat dan kurang responsif?",
                                     prompts: [
-                                        "• Pelajari konsep dasar AI seperti machine learning dan neural networks",
-                                        "• Coba tool AI populer seperti ChatGPT untuk merasakan langsung kemampuannya",
-                                        "• Ikuti komunitas AI di media sosial untuk update tren dan tutorial",
-                                        "• Baca artikel atau nonton video pengantar AI dari sumber terpercaya",
-                                        "• Coba fitur AI di aplikasi yang sudah kamu gunakan sehari-hari",
-                                        "• Pelajari cara membuat prompt yang efektif untuk mendapatkan hasil terbaik",
-                                        "• Eksperimen dengan berbagai jenis AI untuk tugas yang berbeda"
+                                        "• Hapus aplikasi yang tidak terpakai secara rutin untuk membebaskan ruang penyimpanan.",
+                                        "• Bersihkan cache aplikasi secara berkala melalui pengaturan ponsel Anda.",
+                                        "• Nonaktifkan fitur sinkronisasi otomatis untuk aplikasi yang tidak esensial.",
+                                        "• Hindari penggunaan banyak widget di layar utama yang dapat memakan sumber daya.",
+                                        "• Perbarui sistem operasi dan aplikasi Anda ke versi terbaru untuk perbaikan kinerja."
+                                    ]
+                                },
+                                {
+                                    hook: "Sering merasa baterai HP cepat habis dan performa menurun?",
+                                    prompts: [
+                                        "• Kurangi kecerahan layar dan aktifkan mode hemat daya.",
+                                        "• Tutup aplikasi yang berjalan di latar belakang saat tidak digunakan.",
+                                        "• Nonaktifkan lokasi, Bluetooth, dan Wi-Fi jika tidak diperlukan.",
+                                        "• Hindari paparan suhu ekstrem yang dapat merusak baterai.",
+                                        "• Gunakan pengisi daya original atau berkualitas tinggi.",
+                                        "• Lakukan restart ponsel secara berkala untuk menyegarkan sistem."
                                     ]
                                 }
                             ];
@@ -1202,43 +1211,46 @@
                         const threadElement = createThread(thread, index, false, ctaUsed);
                         threadsContainer.appendChild(threadElement);
                     });
-                    imageGenPromptTextarea.value = buildImagePromptFromThread(threads[0].hook, topic, specificKeywordsInput.value.trim());
-                    renderPostingPreview(threads[0].hook, threads[0].prompts, ctaUsed, 'thread');
+                    sampleMainContent = threads[0].hook;
+                    samplePrompts = threads[0].prompts;
+                    sampleImagePrompt = buildImagePromptFromThread(threads[0].hook, topic, specificKeywordsInput.value.trim());
+
                 } else if (selectedOutputFormat === 'blog-outline') {
-                    const sampleOutline = {
-                        outline: `Judul Blog Post: ${topic} dan Masa Depan Kita\n\nI. Pendahuluan\n   A. Apa itu ${topic} dan mengapa penting?\n   B. Gambaran singkat evolusi ${topic}\nII. Aplikasi ${topic} dalam Kehidupan Sehari-hari\n   A. Contoh di smartphone Anda\n   B. Di industri dan bisnis\nIII. Tantangan dan Etika ${topic}\n   A. Isu privasi data\n   B. Potensi bias AI\nIV. Masa Depan ${topic} dan Rekomendasi\n   A. Prediksi perkembangan ke depan\n   B. Cara beradaptasi dengan ${topic}\nV. Kesimpulan\n   A. Ringkasan poin kunci\n   B. Ajakan untuk eksplorasi lebih lanjut`
-                    };
+                    const sampleOutlineText = `Judul Blog Post: ${topic} dan Masa Depan Kita\n\nI. Pendahuluan\n   A. Apa itu ${topic} dan mengapa penting?\n   B. Gambaran singkat evolusi ${topic}\nII. Aplikasi ${topic} dalam Kehidupan Sehari-hari\n   A. Contoh di smartphone Anda\n   B. Di industri dan bisnis\nIII. Tantangan dan Etika ${topic}\n   A. Isu privasi data\n   B. Potensi bias AI\nIV. Masa Depan ${topic} dan Rekomendasi\n   A. Prediksi perkembangan ke depan\n   B. Cara beradaptasi dengan ${topic}\nV. Kesimpulan\n   A. Ringkasan poin kunci\n   B. Ajakan untuk eksplorasi lebih lanjut`;
+                    
                     threadsContainer.innerHTML = `
                         <div class="thread-card">
                             <h4 class="mb-3">Outline Blog Post</h4>
-                            <div class="prompt-item editable-content" contenteditable="true">${sampleOutline.outline.replace(/\n/g, '<br>')}</div>
+                            <div class="prompt-item editable-content" contenteditable="true">${sampleOutlineText.replace(/\n/g, '<br>')}</div>
                             <button class="btn btn-sm btn-outline-primary mt-3" onclick="copyToClipboard(document.querySelector('.thread-card .prompt-item.editable-content').innerText)"><i class="bi bi-clipboard me-1"></i> Salin Outline</button>
                         </div>
                     `;
-                    imageGenPromptTextarea.value = buildImagePromptFromBlogOutline(sampleOutline.outline, topic, specificKeywordsInput.value.trim());
-                    renderPostingPreview(sampleOutline.outline, [], ctaUsed, 'blog');
+                    sampleMainContent = sampleOutlineText;
+                    sampleImagePrompt = buildImagePromptFromBlogOutline(sampleOutlineText, topic, specificKeywordsInput.value.trim());
+
                 } else if (selectedOutputFormat === 'caption') {
-                    const sampleCaption = {
-                        caption: `Kecerdasan Buatan mengubah segalanya! Mulai dari cara kita bekerja hingga berinteraksi. Jangan ketinggalan era ini, pelajari dasar-dasarnya sekarang!\n\n#AI #MasaDepan #Teknologi`
-                    };
+                    const sampleCaptionText = `Kecerdasan Buatan mengubah segalanya! Mulai dari cara kita bekerja hingga berinteraksi. Jangan ketinggalan era ini, pelajari dasar-dasarnya sekarang!\n\n#AI #MasaDepan #Teknologi`;
+                    
                     threadsContainer.innerHTML = `
                         <div class="thread-card">
                             <h4 class="mb-3">Caption Singkat</h4>
-                            <div class="prompt-item editable-content" contenteditable="true">${sampleCaption.caption.replace(/\n/g, '<br>')}</div>
+                            <div class="prompt-item editable-content" contenteditable="true">${sampleCaptionText.replace(/\n/g, '<br>')}</div>
                             <button class="btn btn-sm btn-outline-primary mt-3" onclick="copyToClipboard(document.querySelector('.thread-card .prompt-item.editable-content').innerText)"><i class="bi bi-clipboard me-1"></i> Salin Caption</button>
                         </div>
                     `;
-                    imageGenPromptTextarea.value = buildImagePromptFromCaption(sampleCaption.caption, topic, specificKeywordsInput.value.trim());
-                    renderPostingPreview(sampleCaption.caption, [], ctaUsed, 'caption');
+                    sampleMainContent = sampleCaptionText;
+                    sampleImagePrompt = buildImagePromptFromCaption(sampleCaptionText, topic, specificKeywordsInput.value.trim());
                 }
 
+                imageGenPromptTextarea.value = sampleImagePrompt;
                 imagePromptSection.style.display = 'block';
-                previewSection.style.display = 'block';
+                renderPostingPreview(sampleMainContent, samplePrompts, ctaUsed, selectedOutputFormat);
+
                 lastGeneratedSpan.textContent = new Date().toLocaleString('id-ID') + ' (Sample)';
             }
 
             // Load sample threads on page load
-            generateSampleThreads(selectedTopic, null);
+            generateSampleThreads(selectedTopic, null); // Pass null for ctaText to use default CTA initially
 
             // Simulate daily thread generation (for actual use, this would be a backend cron job)
             function simulateDailyGeneration() {
@@ -1260,11 +1272,12 @@
                         };
                         generateContentWithAPI(apiKey, params);
                     } else {
-                        generateSampleThreads(selectedTopic, null);
+                        // Use default CTA text for sample generation
+                        const defaultCta = `PS: Saya juga buka kelas AI untuk kamu yang benar-benar awam!\nKeunggulannya: setiap hari ada postingan tutorial terbaru, update terus.\nBelajar bisa kapan saja mulai jam 08.00 sampai 00.00 WIB.\nBebas belajar sampai bisa, sistem bayar per 10 hari.\nDan yang paling penting, harganya terjangkau dan disesuaikan.\nLangsung klik: https://lynk.id/vdmax`;
+                        generateSampleThreads(selectedTopic, defaultCta);
                     }
                 }
             }
-            // Check every minute if it's time to generate new threads
             // setInterval(simulateDailyGeneration, 60000); // Commented out to avoid excessive sample regeneration during testing
         });
     </script>
