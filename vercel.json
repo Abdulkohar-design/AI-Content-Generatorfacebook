@@ -1,6 +1,6 @@
 {
   "version": 2,
-  "name": "ai-content-generator",
+  "name": "ai-content-generator-facebook",
   "builds": [
     {
       "src": "index.html",
