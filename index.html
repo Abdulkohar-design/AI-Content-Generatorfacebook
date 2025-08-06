@@ -364,7 +364,7 @@
                 Gunakan prompt di bawah ini di tool AI Gambar favorit Anda (contoh: Midjourney, DALL-E, Stable Diffusion) untuk menghasilkan visual yang relevan dengan konten Anda.
             </div>
             <div id="generatedImagePromptsContainer">
-                <!-- Multiple image prompts will be loaded here if format is 'thread' -->
+                <!-- Multiple image prompts will be loaded here if format is 'thread' or 'caption' -->
                 <!-- Otherwise, a single prompt will appear here -->
             </div>
         </div>
@@ -451,7 +451,6 @@
             let selectedOutputFormat = 'thread';
             let customCTAs = [];
             let generatedContentHistory = [];
-            let currentGeneratedThreads = []; // To store threads for image prompt generation
 
             // --- UI Elements Cache ---
             const apiKeyInput = document.getElementById('apiKey');
@@ -805,35 +804,30 @@
                 generatedImagePromptsContainer.innerHTML = ''; // Clear image prompts too
                 imagePromptSection.style.display = 'none';
                 previewSection.style.display = 'none';
-                currentGeneratedThreads = []; // Clear stored threads
 
                 // Show loading state
                 loadingSpinner.classList.add('active');
                 generateBtn.disabled = true;
                 updateLoadingMessage('Sedang menyiapkan permintaan...');
                 
-                let defaultCtaText = selectedCtaSelect.value === 'default' ? `PS: Saya juga buka kelas AI untuk kamu yang benar-benar awam!\nKeunggulannya: setiap hari ada postingan tutorial terbaru, update terus.\nBelajar bisa kapan saja mulai jam 08.00 sampai 00.00 WIB.\nBebas belajar sampai bisa, sistem bayar per 10 hari.\nDan yang paling penting, harganya terjangkau dan disesuaikan.\nLangsung klik: https://lynk.id/vdmax` : params.customCta;
+                let actualCtaText = selectedCtaSelect.value === 'default' ? `PS: Saya juga buka kelas AI untuk kamu yang benar-benar awam!\nKeunggulannya: setiap hari ada postingan tutorial terbaru, update terus.\nBelajar bisa kapan saja mulai jam 08.00 sampai 00.00 WIB.\nBebas belajar sampai bisa, sistem bayar per 10 hari.\nDan yang paling penting, harganya terjangkau dan disesuaikan.\nLangsung klik: https://lynk.id/vdmax` : params.customCta;
 
                 let prompt = '';
-                let jsonPath = ''; // To specify where to find the content in the JSON response
+                let contentDataForHistory = {}; // To store the parsed content data
 
                 // Dynamic prompt construction based on format and other parameters
                 switch(params.outputFormat) {
                     case 'thread':
                         prompt = buildThreadPrompt(params);
-                        jsonPath = 'threads';
                         break;
                     case 'blog-outline':
                         prompt = buildBlogOutlinePrompt(params);
-                        jsonPath = 'outline';
                         break;
                     case 'caption':
                         prompt = buildCaptionPrompt(params);
-                        jsonPath = 'captions';
                         break;
                     default:
                         prompt = buildThreadPrompt(params); // Fallback to thread
-                        jsonPath = 'threads';
                 }
 
                 try {
@@ -868,7 +862,8 @@
                     }
                     
                     const generatedData = JSON.parse(jsonMatch[0]);
-                    
+                    contentDataForHistory = generatedData; // Store for history
+
                     let allImagePrompts = [];
                     let previewMainContent = '';
                     let previewPrompts = []; // Used specifically for thread previews
@@ -876,11 +871,10 @@
                     // Render based on output format
                     if (params.outputFormat === 'thread') {
                         if (generatedData.threads && generatedData.threads.length > 0) {
-                            currentGeneratedThreads = generatedData.threads; // Store for image prompts
                             generatedData.threads.forEach((thread, index) => {
-                                const threadElement = createThread(thread, index, false, defaultCtaText);
+                                const threadElement = createThread(thread, index, false, actualCtaText);
                                 threadsContainer.appendChild(threadElement);
-                                allImagePrompts.push(buildImagePromptFromContent(thread.hook, params.topic, params.keywords));
+                                allImagePrompts.push(buildImagePromptFromContent(thread.hook, params.topic, params.keywords, 'thread'));
                             });
                             previewMainContent = generatedData.threads[0].hook;
                             previewPrompts = generatedData.threads[0].prompts;
@@ -943,7 +937,7 @@
                     imagePromptSection.style.display = 'block';
 
                     // Render posting preview
-                    renderPostingPreview(previewMainContent, previewPrompts, defaultCtaText, params.outputFormat);
+                    renderPostingPreview(previewMainContent, previewPrompts, actualCtaText, params.outputFormat);
 
                     // Update last generated time
                     const now = new Date();
@@ -956,9 +950,9 @@
                         date: now.toISOString(),
                         topic: params.topic,
                         format: params.outputFormat,
-                        content: generatedData,
+                        content: contentDataForHistory, // Store the full generated content
                         imagePrompts: allImagePrompts, // Store all generated image prompts
-                        cta: defaultCtaText
+                        cta: actualCtaText
                     });
                     saveGeneratedHistory();
                     
@@ -967,7 +961,7 @@
                     showError(`Gagal menghasilkan konten: ${error.message}. Coba lagi atau sesuaikan prompt.`);
                     
                     // Fallback to sample threads if error, based on selected format/topic
-                    generateSampleThreads(params.topic, defaultCtaText); // Use default CTA here too
+                    generateSampleThreads(params.topic, actualCtaText); // Use default CTA here too
                 } finally {
                     // Sembunyikan loading state
                     loadingSpinner.classList.remove('active');
@@ -1153,34 +1147,40 @@
 
             // --- Image Prompt Generation ---
             function buildImagePromptFromContent(content, topic, keywords, format = 'thread') {
-                let mainText = '';
+                let mainTextForImage = '';
                 if (format === 'thread') {
                     // For threads, content is the hook
-                    mainText = content.split('.')[0].trim();
+                    mainTextForImage = content.split('.')[0].trim(); // Get the first sentence of the hook
                 } else if (format === 'blog-outline') {
                     // For blog outline, extract the title
                     const titleMatch = content.match(/^Judul Blog Post:\s*([^\n]+)/);
-                    mainText = titleMatch ? titleMatch[1].trim() : (content.split('\n')[0] || '').replace('Judul Blog Post:', '').trim();
+                    mainTextForImage = titleMatch ? titleMatch[1].trim() : (content.split('\n')[0] || '').replace('Judul Blog Post:', '').trim();
                 } else if (format === 'caption') {
                     // For caption, use the first part of the caption
-                    mainText = content.split('. ')[0].trim();
+                    mainTextForImage = content.split('. ')[0].trim(); // Get the first sentence of the caption
                 }
 
-                if (mainText.length > 70) mainText = mainText.substring(0, 70) + '...'; // Truncate long texts
+                if (mainTextForImage.length > 70) mainTextForImage = mainTextForImage.substring(0, 70) + '...'; // Truncate long texts for brevity in prompt
 
-                let style = '';
+                let styleDescription = '';
                 switch(toneStyleSelect.value) {
-                    case 'santai': style = 'a vibrant, friendly, and approachable cartoon style'; break;
-                    case 'motivasi': style = 'an inspiring, cinematic, and bright style'; break;
-                    case 'humor': style = 'a humorous, quirky, and playful illustration style'; break;
-                    case 'profesional': style = 'a sleek, modern, and professional corporate style'; break;
-                    default: style = 'a clear, modern, and informative graphic design style'; break;
+                    case 'santai': styleDescription = 'a vibrant, friendly, and approachable cartoon style'; break;
+                    case 'motivasi': styleDescription = 'an inspiring, cinematic, and bright style'; break;
+                    case 'humor': styleDescription = 'a humorous, quirky, and playful illustration style'; break;
+                    case 'profesional': styleDescription = 'a sleek, modern, and professional corporate style'; break;
+                    default: styleDescription = 'a clear, modern, and informative graphic design style'; break;
                 }
 
-                // Perbaikan: Pastikan teks "PEMBELAJARAN JARAK JAUH" selalu ada dan relevan
-                let specificDetail = `The image should conceptually represent "${mainText}" related to ${topic}${keywords ? ` and ${keywords}` : ''}.`;
+                // Base visual description, always consistent with the example image
+                const baseVisual = `A vibrant, futuristic, and digital illustration. The scene features diverse people (adults and children) actively engaged with glowing laptops, tablets, and smartphones, surrounded by interconnected blue and pink digital lines, circuit patterns, and abstract data streams, symbolizing technology and connectivity in education.`;
+
+                // Instruction for the fixed text overlay
+                const textOverlayInstruction = `Include the exact text 'PEMBELAJARAN JARAK JAUH' prominently displayed in the image, integrated subtly into the digital elements or as a holographic projection.`;
+
+                // Dynamic content integration based on the specific generated text
+                const dynamicContentIntegration = `Visually interpret the core theme of "${mainTextForImage}" within this digital learning environment, emphasizing aspects like ${topic}${keywords ? ` and ${keywords}` : ''}.`;
                 
-                return `A vibrant, futuristic, and digital illustration representing 'PEMBELAJARAN JARAK JAUH' (DISTANCE LEARNING). The scene shows diverse people of various ages, including adults and children, actively engaged with laptops, tablets, and smartphones. They are surrounded by glowing blue and pink digital lines, circuit patterns, and abstract data streams, symbolizing technology and connectivity, aligning with the concept of AI education. ${specificDetail} The overall mood is innovative, educational, and accessible. Include the exact text 'PEMBELAJARAN JARAK JAUH' prominently displayed in the image, integrate it subtly into the digital elements. --ar 16:9 --style raw --v 5.2 --q 2`;
+                return `${baseVisual} ${dynamicContentIntegration} ${textOverlayInstruction} Overall mood: innovative, educational, and accessible. Style: ${styleDescription}. --ar 16:9 --v 5.2 --q 2`;
             }
 
 
@@ -1291,7 +1291,7 @@
                     threads.forEach((thread, index) => {
                         const threadElement = createThread(thread, index, false, ctaUsed);
                         threadsContainer.appendChild(threadElement);
-                        sampleImagePrompts.push(buildImagePromptFromContent(thread.hook, topic, specificKeywordsInput.value.trim()));
+                        sampleImagePrompts.push(buildImagePromptFromContent(thread.hook, topic, specificKeywordsInput.value.trim(), 'thread'));
                     });
                     if (threads.length > 0) {
                         previewMainContent = threads[0].hook;
