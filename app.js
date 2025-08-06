@@ -1,4 +1,3 @@
-// Enhanced AI Content Generator - Main Application Logic
 class AIContentGenerator {
     constructor() {
         this.currentTheme = localStorage.getItem('theme') || 'light';
