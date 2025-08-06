@@ -1,9 +1,9 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="id">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Daily AI Content Generator</title>
+    <title>Generator Konten AI Harian</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
     <style>
@@ -138,734 +138,750 @@
 <body>
     <div class="header">
         <div class="container">
-            <h1 class="text-center">Daily AI Content Generator</h1>
-            <p class="text-center mb-0">Generates 3 unique AI tutorial threads daily at 07:00 AM WIB</p>
+            <h1 class="text-center">Generator Konten AI Harian</h1>
+            <p class="text-center mb-0">Menghasilkan 3 thread tutorial AI unik setiap hari pukul 07.00 WIB</p>
+        </div>
+    </div>
+Generated code
+<div class="container">
+    <div class="schedule-info">
+        <div class="d-flex align-items-center">
+            <i class="bi bi-clock-history me-2"></i>
+            <div>
+                <strong>Jadwal Otomatis:</strong> Setiap hari pukul 07.00 WIB
+                <div class="small">Konten terakhir dihasilkan: <span id="lastGenerated">-</span></div>
+            </div>
         </div>
     </div>
 
-    <div class="container">
-        <div class="schedule-info">
-            <div class="d-flex align-items-center">
-                <i class="bi bi-clock-history me-2"></i>
-                <div>
-                    <strong>Automatic Schedule:</strong> Daily at 07:00 AM WIB
-                    <div class="small">Last generated content: <span id="lastGenerated">-</span></div>
-                </div>
-            </div>
-        </div>
-
-        <div class="api-section">
-            <h4 class="mb-3">Gemini 2.5 Flash API Settings</h4>
-            <div class="row">
-                <div class="col-md-8">
-                    <div class="input-group mb-3">
-                        <span class="input-group-text">API Key</span>
-                        <input type="password" id="apiKey" class="form-control" placeholder="Enter your Gemini API Key">
-                        <button class="btn btn-primary" id="saveApiKey">Save</button>
-                    </div>
-                </div>
-                <div class="col-md-4">
-                    <div class="d-flex align-items-center">
-                        <span class="status-indicator" id="apiStatus"></span>
-                        <span id="apiStatusText">API Status: Not connected</span>
-                    </div>
-                </div>
-            </div>
-            <div class="form-text">
-                Get API Key from <a href="https://makersuite.google.com/app/apikey" target="_blank">Google AI Studio</a>
-            </div>
-        </div>
-
-        <div class="generate-section">
-            <h4>Generate AI Content Manually</h4>
-            <p class="text-muted">Select a topic and click the button below to generate new content manually</p>
-            
-            <div class="topic-selector">
-                <div class="topic-badge active" data-topic="umum">General AI</div>
-                <div class="topic-badge" data-topic="chatgpt">ChatGPT</div>
-                <div class="topic-badge" data-topic="gambar">AI Image</div>
-                <div class="topic-badge" data-topic="video">AI Video</div>
-                <div class="topic-badge" data-topic="bisnis">AI for Business</div>
-                <div class="topic-badge" data-topic="pendidikan">AI for Education</div>
-            </div>
-            
-            <button id="generateBtn" class="btn btn-primary btn-lg">
-                <i class="bi bi-magic me-2"></i>Generate Content Now
-            </button>
-            <div class="loading-spinner" id="loadingSpinner">
-                <div class="spinner-border text-primary" role="status">
-                    <span class="visually-hidden">Loading...</span>
-                </div>
-                <p class="mt-2">Generating content...</p>
-            </div>
-        </div>
-
+    <div class="api-section">
+        <h4 class="mb-3">Pengaturan API Gemini 2.5 Flash</h4>
         <div class="row">
-            <div class="col-md-12">
-                <h3 class="mb-4">Today's AI Content</h3>
-                <div id="threadsContainer" class="thread-container">
-                    <!-- Threads will be loaded here -->
+            <div class="col-md-8">
+                <div class="input-group mb-3">
+                    <span class="input-group-text">API Key</span>
+                    <input type="password" id="apiKey" class="form-control" placeholder="Masukkan API Key Gemini Anda">
+                    <button class="btn btn-primary" id="saveApiKey">Simpan</button>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="d-flex align-items-center">
+                    <span class="status-indicator" id="apiStatus"></span>
+                    <span id="apiStatusText">Status API: Tidak terhubung</span>
                 </div>
             </div>
         </div>
-    </div>
-
-    <div class="toast-container">
-        <div id="copyToast" class="toast" role="alert" aria-live="assertive" aria-atomic="true">
-            <div class="toast-header">
-                <strong class="me-auto">Copied Successfully</strong>
-                <button type="button" class="btn-close" data-bs-dismiss="toast" aria-label="Close"></button>
-            </div>
-            <div class="toast-body">
-                Text has been copied to clipboard
-            </div>
-        </div>
-        <div id="errorToast" class="toast" role="alert" aria-live="assertive" aria-atomic="true">
-            <div class="toast-header bg-danger text-white">
-                <strong class="me-auto">Error</strong>
-                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="toast" aria-label="Close"></button>
-            </div>
-            <div class="toast-body" id="errorMessage">
-                An error occurred while generating content
-            </div>
+        <div class="form-text">
+            Dapatkan API Key dari <a href="https://makersuite.google.com/app/apikey" target="_blank">Google AI Studio</a>
         </div>
     </div>
 
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-    <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            // Variable to store the selected topic
-            let selectedTopic = 'umum'; // Keep 'umum' for data-topic consistency internally
-            
-            // Check saved API Key
-            const savedApiKey = localStorage.getItem('geminiApiKey');
-            if (savedApiKey) {
-                document.getElementById('apiKey').value = savedApiKey;
+    <div class="generate-section">
+        <h4>Generate Konten AI Manual</h4>
+        <p class="text-muted">Pilih topik dan klik tombol di bawah untuk generate konten baru secara manual</p>
+        
+        <div class="topic-selector">
+            <div class="topic-badge active" data-topic="umum">AI Umum</div>
+            <div class="topic-badge" data-topic="chatgpt">ChatGPT</div>
+            <div class="topic-badge" data-topic="gambar">AI Gambar</div>
+            <div class="topic-badge" data-topic="video">AI Video</div>
+            <div class="topic-badge" data-topic="bisnis">AI untuk Bisnis</div>
+            <div class="topic-badge" data-topic="pendidikan">AI untuk Pendidikan</div>
+        </div>
+        
+        <button id="generateBtn" class="btn btn-primary btn-lg">
+            <i class="bi bi-magic me-2"></i>Generate Konten Sekarang
+        </button>
+        <div class="loading-spinner" id="loadingSpinner">
+            <div class="spinner-border text-primary" role="status">
+                <span class="visually-hidden">Loading...</span>
+            </div>
+            <p class="mt-2">Sedang menghasilkan konten...</p>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-md-12">
+            <h3 class="mb-4">Konten AI Hari Ini</h3>
+            <div id="threadsContainer" class="thread-container">
+                <!-- Thread akan dimuat di sini -->
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="toast-container">
+    <div id="copyToast" class="toast" role="alert" aria-live="assertive" aria-atomic="true">
+        <div class="toast-header">
+            <strong class="me-auto">Berhasil Disalin</strong>
+            <button type="button" class="btn-close" data-bs-dismiss="toast" aria-label="Close"></button>
+        </div>
+        <div class="toast-body">
+            Teks telah disalin ke clipboard
+        </div>
+    </div>
+    <div id="errorToast" class="toast" role="alert" aria-live="assertive" aria-atomic="true">
+        <div class="toast-header bg-danger text-white">
+            <strong class="me-auto">Error</strong>
+            <button type="button" class="btn-close btn-close-white" data-bs-dismiss="toast" aria-label="Close"></button>
+        </div>
+        <div class="toast-body" id="errorMessage">
+            Terjadi kesalahan saat menghasilkan konten
+        </div>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Variabel untuk menyimpan topik yang dipilih
+        let selectedTopic = 'umum';
+        
+        // Cek API Key yang tersimpan
+        const savedApiKey = localStorage.getItem('geminiApiKey');
+        if (savedApiKey) {
+            document.getElementById('apiKey').value = savedApiKey;
+            updateApiStatus(true);
+        } else {
+            updateApiStatus(false);
+        }
+
+        // Simpan API Key
+        document.getElementById('saveApiKey').addEventListener('click', function() {
+            const apiKey = document.getElementById('apiKey').value;
+            if (apiKey.trim() !== '') {
+                localStorage.setItem('geminiApiKey', apiKey);
                 updateApiStatus(true);
+                showToast('API Key berhasil disimpan');
             } else {
-                updateApiStatus(false);
+                showToast('API Key tidak boleh kosong', 'warning');
             }
+        });
 
-            // Save API Key
-            document.getElementById('saveApiKey').addEventListener('click', function() {
-                const apiKey = document.getElementById('apiKey').value;
-                if (apiKey.trim() !== '') {
-                    localStorage.setItem('geminiApiKey', apiKey);
-                    updateApiStatus(true);
-                    showToast('API Key saved successfully');
+        // Topic selector
+        document.querySelectorAll('.topic-badge').forEach(badge => {
+            badge.addEventListener('click', function() {
+                document.querySelectorAll('.topic-badge').forEach(b => b.classList.remove('active'));
+                this.classList.add('active');
+                selectedTopic = this.getAttribute('data-topic');
+            });
+        });
+
+        // Generate Manual Button
+        document.getElementById('generateBtn').addEventListener('click', function() {
+            const apiKey = localStorage.getItem('geminiApiKey');
+            if (!apiKey) {
+                showError('Silakan masukkan API Key terlebih dahulu');
+                return;
+            }
+            
+            generateThreadsWithAPI(apiKey, selectedTopic);
+        });
+
+        // Fungsi untuk memperbarui status API
+        function updateApiStatus(isConnected) {
+            const statusIndicator = document.getElementById('apiStatus');
+            const statusText = document.getElementById('apiStatusText');
+            
+            if (isConnected) {
+                statusIndicator.classList.add('status-active');
+                statusIndicator.classList.remove('status-inactive');
+                statusText.textContent = 'Status API: Terhubung';
+            } else {
+                statusIndicator.classList.add('status-inactive');
+                statusIndicator.classList.remove('status-active');
+                statusText.textContent = 'Status API: Tidak terhubung';
+            }
+        }
+
+        // Fungsi untuk menampilkan toast
+        function showToast(message, type = 'success') {
+            const toastElement = document.getElementById('copyToast');
+            const toastBody = toastElement.querySelector('.toast-body');
+            toastBody.textContent = message;
+            
+            const toast = new bootstrap.Toast(toastElement);
+            toast.show();
+        }
+
+        // Fungsi untuk menampilkan error
+        function showError(message) {
+            const toastElement = document.getElementById('errorToast');
+            const errorMessage = document.getElementById('errorMessage');
+            errorMessage.textContent = message;
+            
+            const toast = new bootstrap.Toast(toastElement);
+            toast.show();
+        }
+
+        // Fungsi untuk menyalin teks (diperbaiki)
+        function copyToClipboard(text) {
+            // Membuat elemen textarea sementara
+            const textarea = document.createElement('textarea');
+            textarea.value = text;
+            textarea.style.position = 'fixed'; // Menghindari scroll ke bawah
+            textarea.style.opacity = '0'; // Menyembunyikan elemen
+            document.body.appendChild(textarea);
+            textarea.select();
+            
+            try {
+                // Menjalankan perintah salin
+                const successful = document.execCommand('copy');
+                if (successful) {
+                    showToast('Teks berhasil disalin');
                 } else {
-                    showToast('API Key cannot be empty', 'warning');
+                    showToast('Gagal menyalin teks', 'danger');
                 }
+            } catch (err) {
+                showToast('Gagal menyalin teks', 'danger');
+                console.error('Gagal menyalin: ', err);
+            }
+            
+            // Menghapus elemen textarea
+            document.body.removeChild(textarea);
+        }
+
+        // Fungsi untuk membuat thread (diperbaiki)
+        function createThread(threadData, index) {
+            const threadCard = document.createElement('div');
+            threadCard.className = 'thread-card';
+            
+            const header = document.createElement('div');
+            header.className = 'thread-header';
+            header.textContent = `Thread ${index + 1}`;
+            
+            const hook = document.createElement('div');
+            hook.className = 'prompt-item';
+            
+            // Membuat elemen untuk hook text
+            const hookText = document.createElement('span');
+            hookText.textContent = threadData.hook;
+            
+            // Membuat tombol salin untuk hook
+            const hookCopyBtn = document.createElement('button');
+            hookCopyBtn.className = 'copy-btn';
+            hookCopyBtn.innerHTML = '<i class="bi bi-clipboard"></i>';
+            hookCopyBtn.addEventListener('click', function() {
+                copyToClipboard(threadData.hook);
             });
-
-            // Topic selector
-            document.querySelectorAll('.topic-badge').forEach(badge => {
-                badge.addEventListener('click', function() {
-                    document.querySelectorAll('.topic-badge').forEach(b => b.classList.remove('active'));
-                    this.classList.add('active');
-                    selectedTopic = this.getAttribute('data-topic');
+            
+            hook.appendChild(hookText);
+            hook.appendChild(hookCopyBtn);
+            
+            const promptsContainer = document.createElement('div');
+            
+            threadData.prompts.forEach(prompt => {
+                const promptItem = document.createElement('div');
+                promptItem.className = 'prompt-item';
+                
+                // Membuat elemen untuk prompt text
+                const promptText = document.createElement('span');
+                promptText.textContent = `• ${prompt}`;
+                
+                // Membuat tombol salin untuk prompt
+                const promptCopyBtn = document.createElement('button');
+                promptCopyBtn.className = 'copy-btn';
+                promptCopyBtn.innerHTML = '<i class="bi bi-clipboard"></i>';
+                promptCopyBtn.addEventListener('click', function() {
+                    copyToClipboard(`• ${prompt}`);
                 });
+                
+                promptItem.appendChild(promptText);
+                promptItem.appendChild(promptCopyBtn);
+                promptsContainer.appendChild(promptItem);
             });
-
-            // Generate Manual Button
-            document.getElementById('generateBtn').addEventListener('click', function() {
-                const apiKey = localStorage.getItem('geminiApiKey');
-                if (!apiKey) {
-                    showError('Please enter API Key first');
-                    return;
-                }
-                
-                generateThreadsWithAPI(apiKey, selectedTopic);
+            
+            const ctaSection = document.createElement('div');
+            ctaSection.className = 'cta-section';
+            
+            // Membuat elemen untuk CTA text
+            const ctaText = document.createElement('div');
+            ctaText.innerHTML = `
+                PS: Saya juga buka kelas AI untuk kamu yang benar-benar awam!<br>
+                Keunggulannya: setiap hari ada postingan tutorial terbaru, update terus.<br>
+                Belajar bisa kapan saja mulai jam 08.00 sampai 00.00 WIB.<br>
+                Bebas belajar sampai bisa, sistem bayar per 10 hari.<br>
+                Dan yang paling penting, harganya terjangkau dan disesuaikan.<br>
+                Langsung klik: https://lynk.id/vdmax
+            `;
+            
+            // Membuat tombol salin untuk CTA
+            const ctaCopyBtn = document.createElement('button');
+            ctaCopyBtn.className = 'btn btn-sm btn-outline-primary';
+            ctaCopyBtn.innerHTML = '<i class="bi bi-clipboard me-1"></i> Salin CTA';
+            ctaCopyBtn.addEventListener('click', function() {
+                const ctaFullText = `PS: Saya juga buka kelas AI untuk kamu yang benar-benar awam!\nKeunggulannya: setiap hari ada postingan tutorial terbaru, update terus.\nBelajar bisa kapan saja mulai jam 08.00 sampai 00.00 WIB.\nBebas belajar sampai bisa, sistem bayar per 10 hari.\nDan yang paling penting, harganya terjangkau dan disesuaikan.\nLangsung klik: https://lynk.id/vdmax`;
+                copyToClipboard(ctaFullText);
             });
+            
+            const ctaContainer = document.createElement('div');
+            ctaContainer.className = 'd-flex justify-content-between align-items-center';
+            ctaContainer.appendChild(ctaText);
+            ctaContainer.appendChild(ctaCopyBtn);
+            
+            ctaSection.appendChild(ctaContainer);
+            
+            threadCard.appendChild(header);
+            threadCard.appendChild(hook);
+            threadCard.appendChild(promptsContainer);
+            threadCard.appendChild(ctaSection);
+            
+            return threadCard;
+        }
 
-            // Function to update API status
-            function updateApiStatus(isConnected) {
-                const statusIndicator = document.getElementById('apiStatus');
-                const statusText = document.getElementById('apiStatusText');
-                
-                if (isConnected) {
-                    statusIndicator.classList.add('status-active');
-                    statusIndicator.classList.remove('status-inactive');
-                    statusText.textContent = 'API Status: Connected';
-                } else {
-                    statusIndicator.classList.add('status-inactive');
-                    statusIndicator.classList.remove('status-active');
-                    statusText.textContent = 'API Status: Not connected';
-                }
-            }
-
-            // Function to display toast
-            function showToast(message, type = 'success') {
-                const toastElement = document.getElementById('copyToast');
-                const toastBody = toastElement.querySelector('.toast-body');
-                toastBody.textContent = message;
-                
-                const toast = new bootstrap.Toast(toastElement);
-                toast.show();
-            }
-
-            // Function to display error
-            function showError(message) {
-                const toastElement = document.getElementById('errorToast');
-                const errorMessage = document.getElementById('errorMessage');
-                errorMessage.textContent = message;
-                
-                const toast = new bootstrap.Toast(toastElement);
-                toast.show();
-            }
-
-            // Function to copy text
-            function copyToClipboard(text) {
-                const textarea = document.createElement('textarea');
-                textarea.value = text;
-                textarea.style.position = 'fixed'; 
-                textarea.style.opacity = '0'; 
-                document.body.appendChild(textarea);
-                textarea.select();
-                
-                try {
-                    const successful = document.execCommand('copy');
-                    if (successful) {
-                        showToast('Text copied successfully');
-                    } else {
-                        showToast('Failed to copy text', 'danger');
-                    }
-                } catch (err) {
-                    showToast('Failed to copy text', 'danger');
-                    console.error('Failed to copy: ', err);
-                }
-                
-                document.body.removeChild(textarea);
-            }
-
-            // Function to create thread
-            function createThread(threadData, index) {
-                const threadCard = document.createElement('div');
-                threadCard.className = 'thread-card';
-                
-                const header = document.createElement('div');
-                header.className = 'thread-header';
-                header.textContent = `Thread ${index + 1}`;
-                
-                const hook = document.createElement('div');
-                hook.className = 'prompt-item';
-                
-                const hookText = document.createElement('span');
-                hookText.textContent = threadData.hook;
-                
-                const hookCopyBtn = document.createElement('button');
-                hookCopyBtn.className = 'copy-btn';
-                hookCopyBtn.innerHTML = '<i class="bi bi-clipboard"></i>';
-                hookCopyBtn.addEventListener('click', function() {
-                    copyToClipboard(threadData.hook);
-                });
-                
-                hook.appendChild(hookText);
-                hook.appendChild(hookCopyBtn);
-                
-                const promptsContainer = document.createElement('div');
-                
-                threadData.prompts.forEach(prompt => {
-                    const promptItem = document.createElement('div');
-                    promptItem.className = 'prompt-item';
-                    
-                    const promptText = document.createElement('span');
-                    promptText.textContent = `• ${prompt}`;
-                    
-                    const promptCopyBtn = document.createElement('button');
-                    promptCopyBtn.className = 'copy-btn';
-                    promptCopyBtn.innerHTML = '<i class="bi bi-clipboard"></i>';
-                    promptCopyBtn.addEventListener('click', function() {
-                        copyToClipboard(`• ${prompt}`);
-                    });
-                    
-                    promptItem.appendChild(promptText);
-                    promptItem.appendChild(promptCopyBtn);
-                    promptsContainer.appendChild(promptItem);
-                });
-                
-                const ctaSection = document.createElement('div');
-                ctaSection.className = 'cta-section';
-                
-                const ctaText = document.createElement('div');
-                ctaText.innerHTML = `
-                    PS: I also open AI classes for absolute beginners!<br>
-                    Advantages: daily new tutorial posts, constantly updated.<br>
-                    You can learn anytime from 08:00 AM to 00:00 AM WIB.<br>
-                    Learn freely until you master it, payment system per 10 days.<br>
-                    And most importantly, the price is affordable and adjusted.<br>
-                    Click directly: https://lynk.id/vdmax
-                `;
-                
-                const ctaCopyBtn = document.createElement('button');
-                ctaCopyBtn.className = 'btn btn-sm btn-outline-primary';
-                ctaCopyBtn.innerHTML = '<i class="bi bi-clipboard me-1"></i> Copy CTA';
-                ctaCopyBtn.addEventListener('click', function() {
-                    const ctaFullText = `PS: I also open AI classes for absolute beginners!\nAdvantages: daily new tutorial posts, constantly updated.\nYou can learn anytime from 08:00 AM to 00:00 AM WIB.\nLearn freely until you master it, payment system per 10 days.\nAnd most importantly, the price is affordable and adjusted.\nClick directly: https://lynk.id/vdmax`;
-                    copyToClipboard(ctaFullText);
-                });
-                
-                const ctaContainer = document.createElement('div');
-                ctaContainer.className = 'd-flex justify-content-between align-items-center';
-                ctaContainer.appendChild(ctaText);
-                ctaContainer.appendChild(ctaCopyBtn);
-                
-                ctaSection.appendChild(ctaContainer);
-                
-                threadCard.appendChild(header);
-                threadCard.appendChild(hook);
-                threadCard.appendChild(promptsContainer);
-                threadCard.appendChild(ctaSection);
-                
-                return threadCard;
-            }
-
-            // Generate thread with Gemini API
-            async function generateThreadsWithAPI(apiKey, topic) {
-                const loadingSpinner = document.getElementById('loadingSpinner');
-                const generateBtn = document.getElementById('generateBtn');
-                const container = document.getElementById('threadsContainer');
-                
-                loadingSpinner.classList.add('active');
-                generateBtn.disabled = true;
-                container.innerHTML = '';
-                
-                try {
-                    let topicPrompt = '';
-                    switch(topic) {
-                        case 'chatgpt':
-                            topicPrompt = 'about ChatGPT usage strategies';
-                            break;
-                        case 'gambar':
-                            topicPrompt = 'about AI for image creation such as Midjourney, DALL-E, or Stable Diffusion';
-                            break;
-                        case 'video':
-                            topicPrompt = 'about AI for video creation and editing';
-                            break;
-                        case 'bisnis':
-                            topicPrompt = 'about AI implementation for business and productivity';
-                            break;
-                        case 'pendidikan':
-                            topicPrompt = 'about AI utilization for education and learning';
-                            break;
-                        default: // 'umum'
-                            topicPrompt = 'about various aspects of AI in general';
-                    }
-                    
-                    const prompt = `Generate 3 unique threads as text only (without em-dashes or emojis) ${topicPrompt} that are practical and immediately usable.
-                    
-                    All generated content (hook and prompts) MUST be in English.
-                    
-                    Format for each thread:
-                    1. Starts with an engaging hook sentence
-                    2. Contains 5-10 practical tips, tutorials, or methods
-                    3. Each tip starts with a bullet point (•)
-                    
-                    JSON response format:
-                    {
-                        "threads": [
-                            {
-                                "hook": "Engaging hook sentence",
-                                "prompts": ["Tip 1", "Tip 2", ...]
-                            },
-                            ...
-                        ]
-                    }
-                    
-                    Ensure the response is in a valid JSON format.`;
-
-                    const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${apiKey}`, {
-                        method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/json',
-                        },
-                        body: JSON.stringify({
-                            contents: [{
-                                parts: [{
-                                    text: prompt
-                                }]
-                            }]
-                        })
-                    });
-
-                    if (!response.ok) {
-                        throw new Error(`API Error: ${response.status} ${response.statusText}`);
-                    }
-
-                    const data = await response.json();
-                    const responseText = data.candidates[0].content.parts[0].text;
-                    
-                    let jsonMatch = responseText.match(/\{[\s\S]*\}/);
-                    if (!jsonMatch) {
-                        throw new Error('Invalid response format');
-                    }
-                    
-                    const threadsData = JSON.parse(jsonMatch[0]);
-                    
-                    container.innerHTML = '';
-                    threadsData.threads.forEach((thread, index) => {
-                        const threadElement = createThread(thread, index);
-                        container.appendChild(threadElement);
-                    });
-                    
-                    const now = new Date();
-                    document.getElementById('lastGenerated').textContent = now.toLocaleString('en-US'); // Changed to en-US for consistent UI locale
-                    
-                    showToast('Content generated successfully!');
-                    
-                } catch (error) {
-                    console.error('Error:', error);
-                    showError(`Failed to generate content: ${error.message}`);
-                    
-                    // Fallback to sample threads if error
-                    generateSampleThreads(topic);
-                } finally {
-                    loadingSpinner.classList.remove('active');
-                    generateBtn.disabled = false;
-                }
-            }
-
-            // Generate sample threads for demo
-            function generateSampleThreads(topic) {
-                let threads = [];
-                
+        // Generate thread dengan API Gemini
+        async function generateThreadsWithAPI(apiKey, topic) {
+            const loadingSpinner = document.getElementById('loadingSpinner');
+            const generateBtn = document.getElementById('generateBtn');
+            const container = document.getElementById('threadsContainer');
+            
+            // Tampilkan loading state
+            loadingSpinner.classList.add('active');
+            generateBtn.disabled = true;
+            container.innerHTML = '';
+            
+            try {
+                // Tentukan prompt berdasarkan topik yang dipilih
+                let topicPrompt = '';
                 switch(topic) {
                     case 'chatgpt':
-                        threads = [
-                            {
-                                hook: "Have a small business or work freelance? Use ChatGPT to help you work faster and save time.",
-                                prompts: [
-                                    "Create a price quote template for graphic design services",
-                                    "Rewrite this product description to be more persuasive and clear",
-                                    "Create a list of initial interview questions for new clients",
-                                    "Draft a professional follow-up email for unresponsive prospects",
-                                    "Design 3 options for a short and effective business Instagram bio",
-                                    "Create a 60-second product pitch summary for an oral presentation",
-                                    "Turn this customer testimonial into narrative-style testimonial content",
-                                    "Write 3 versions of headlines for a digital product landing page",
-                                    "Create a week's content schedule for freelance service promotion",
-                                    "Convert these product advantages into 5 bullet points for online ads"
-                                ]
-                            },
-                            {
-                                hook: "Want to increase work productivity? ChatGPT can be your personal assistant for various tasks.",
-                                prompts: [
-                                    "Summarize this meeting's notes into key points",
-                                    "Prepare a meeting agenda for a productive team meeting lasting 30 minutes",
-                                    "Write an email draft to request a project deadline extension",
-                                    "Prioritize daily tasks based on this to-do list",
-                                    "Design a concise and clear weekly progress report template",
-                                    "Write 3 response options for a customer complaint email",
-                                    "Create a list of questions for employee performance evaluation",
-                                    "Arrange a flexible work schedule to improve work-life balance",
-                                    "Write a draft of an internal announcement about office policy changes",
-                                    "Create a constructive feedback template for team work results"
-                                ]
-                            },
-                            {
-                                hook: "Students and learners, leverage ChatGPT to enhance your learning effectiveness.",
-                                prompts: [
-                                    "Explain the concept of photosynthesis in simple language",
-                                    "Summarize this chapter in 5 key points",
-                                    "Write example practice questions along with their solutions",
-                                    "Design an effective study schedule for exam preparation",
-                                    "Create a mind map from this topic to facilitate understanding",
-                                    "Write a short essay on the impact of technology on education",
-                                    "Create a list of discussion questions for a study group",
-                                    "Explain the differences between theory A and theory B",
-                                    "Design effective memorization methods for this material",
-                                    "Write a short research plan for a final assignment"
-                                ]
-                            }
-                        ];
+                        topicPrompt = 'tentang strategi penggunaan ChatGPT';
                         break;
-                        
                     case 'gambar':
-                        threads = [
-                            {
-                                hook: "Want to create cool images with AI? Here are practical tips for beginners who want to try Midjourney or DALL-E.",
-                                prompts: [
-                                    "Use descriptive prompts with specific details about objects, background, and atmosphere",
-                                    "Specify the desired art style such as photo-realistic, illustration, or oil painting",
-                                    "Add quality parameters like --ar 16:9 for landscape format or --v 5 for the latest version",
-                                    "Experiment with unusual color combinations for unique results",
-                                    "Use famous artist references to achieve a similar style",
-                                    "Add lighting details such as golden hour, neon, or soft lighting",
-                                    "Try negative prompting techniques by writing what you don't want to appear in the image",
-                                    "Combine several different concepts for creative results",
-                                    "Use image-to-image feature to transform photos into a specific art style",
-                                    "Learn technical photography terms like depth of field, bokeh, or rule of thirds"
-                                ]
-                            },
-                            {
-                                hook: "AI image results unsatisfactory? Try these 10 techniques to improve output quality.",
-                                prompts: [
-                                    "Refine the prompt by adding specific details about textures and materials",
-                                    "Use layered prompts by starting with simple concepts then adding details",
-                                    "Experiment with different AI models for diverse results",
-                                    "Apply inpainting techniques to fix imperfect parts of an image",
-                                    "Use upscaling features to increase image resolution without losing quality",
-                                    "Combine several AI-generated images with image blending techniques",
-                                    "Learn special parameters like --chaos for variation level or --stylize for creativity",
-                                    "Try negative prompt approach to avoid unwanted elements",
-                                    "Use visual references by uploading images as inspiration",
-                                    "Apply post-processing with image editors for the final touch"
-                                ]
-                            },
-                            {
-                                hook: "Want to monetize AI image creation skills? Here are 10 ways to earn money from this skill.",
-                                prompts: [
-                                    "Sell AI-generated images as stock photos on platforms like Shutterstock or Adobe Stock",
-                                    "Offer graphic design services with AI assistance for time efficiency",
-                                    "Create and sell custom portraits in various art styles",
-                                    "Print AI-generated images on merchandise such as t-shirts, mugs, or phone cases",
-                                    "Create educational content about using AI image generation on YouTube or TikTok",
-                                    "Offer illustration services for books or magazines",
-                                    "Sell special prompt bundles for specific niches at a premium price",
-                                    "Create comics or webtoons with AI-generated characters",
-                                    "Offer business logo creation services with many design variations",
-                                    "Develop NFT art with unique AI technique combinations"
-                                ]
-                            }
-                        ];
+                        topicPrompt = 'tentang AI untuk pembuatan gambar seperti Midjourney, DALL-E, atau Stable Diffusion';
                         break;
-                        
                     case 'video':
-                        threads = [
-                            {
-                                hook: "Want to create cool videos but don't have editing skills? Try these 10 AI video tools that make your life easy.",
-                                prompts: [
-                                    "Use Runway ML to automatically remove video backgrounds",
-                                    "Try Pictory to transform articles into videos in minutes",
-                                    "Utilize Synthesia to create video presentations with AI avatars",
-                                    "Use Descript for text-based video editing like editing a document",
-                                    "Try HeyGen to create videos with avatars speaking various languages",
-                                    "Utilize FlexClip to create short videos with ready-to-use templates",
-                                    "Use Veed.io to add automatic subtitles in various languages",
-                                    "Try Lumen5 to turn blog content into engaging videos",
-                                    "Utilize InVideo to create professional videos with a complete asset library",
-                                    "Use Kapwing for real-time team video editing collaboration"
-                                ]
-                            },
-                            {
-                                hook: "Want to create viral video content? Here are 10 AI techniques that can make your videos stand out.",
-                                prompts: [
-                                    "Use AI for trend analysis and predicting viral topics",
-                                    "Utilize AI script writing tools to create engaging narratives",
-                                    "Try AI voice cloning for consistent narrator voice",
-                                    "Use AI for automatic captioning with various text styles",
-                                    "Utilize AI color grading for a cinematic visual look",
-                                    "Try AI background music generator for a suitable mood soundtrack",
-                                    "Use AI for engagement analysis and thumbnail optimization",
-                                    "Utilize AI for auto-editing based on rhythm and beat",
-                                    "Try AI to create complex visual effects easily",
-                                    "Use AI for video content personalization for various audience segments"
-                                ]
-                            },
-                            {
-                                hook: "Content creators must know! Here are 10 AI workflows that make your video production 10x faster.",
-                                prompts: [
-                                    "Use AI for keyword research and potential video topics",
-                                    "Utilize AI to generate script outlines and content structures",
-                                    "Try AI voice over for narration without manual recording",
-                                    "Use AI to auto-generate relevant B-roll footage that fits the topic",
-                                    "Utilize AI for fast editing with smart cut detection",
-                                    "Try AI for consistent automatic color correction",
-                                    "Use AI to generate eye-catching thumbnails",
-                                    "Utilize AI for video performance analysis and optimization recommendations",
-                                    "Try AI for repurposing video content to various platforms",
-                                    "Use AI for automatic scheduling and publishing to multiple platforms"
-                                ]
-                            }
-                        ];
+                        topicPrompt = 'tentang AI untuk pembuatan dan editing video';
                         break;
-                        
                     case 'bisnis':
-                        threads = [
-                            {
-                                hook: "SME owners must try! 10 AI tools that can make your business operations more efficient.",
-                                prompts: [
-                                    "Use ChatGPT to draft professional emails to clients or suppliers",
-                                    "Utilize Canva AI for promotional graphic design without design skills",
-                                    "Try Jasper AI to create persuasive marketing copywriting",
-                                    "Use Notion AI to manage business projects and documentation",
-                                    "Utilize Fireflies.ai for automatic meeting transcription",
-                                    "Try Crystal for personality analysis and client communication",
-                                    "Use Zia AI from Zoho for sales analysis and trend prediction",
-                                    "Utilize MonkeyLearn for customer feedback sentiment analysis",
-                                    "Try X.ai for automatic meeting scheduling without back-and-forth emails",
-                                    "Use Timely for automatic team productivity time tracking"
-                                ]
-                            },
-                            {
-                                hook: "Want to scale up your business but limited by human resources? These 10 AI strategies can be cost-saving solutions.",
-                                prompts: [
-                                    "Implement AI chatbots for 24/7 customer service",
-                                    "Use AI for personalized marketing campaigns based on user behavior",
-                                    "Utilize AI for inventory prediction and stock optimization",
-                                    "Try AI pricing optimization to determine dynamic product prices",
-                                    "Use AI for competitor analysis and market intelligence",
-                                    "Utilize AI for lead scoring and sales follow-up prioritization",
-                                    "Try AI for automatic financial reports and cash flow analysis",
-                                    "Use AI for fraud detection and transaction security",
-                                    "Utilize AI for optimal product bundling recommendations",
-                                    "Try AI for demand forecasting and production planning"
-                                ]
-                            },
-                            {
-                                hook: "Beginner business owners, where to start with AI? Here are 10 practical steps for AI implementation in small businesses.",
-                                prompts: [
-                                    "Identify the most time-consuming business processes that can be automated",
-                                    "Choose one AI tool that suits business needs and budget",
-                                    "Learn basic tutorials on using the chosen AI tool",
-                                    "Implement gradually in one department first as a pilot project",
-                                    "Gather feedback from the team using the AI tool",
-                                    "Evaluate ROI and effectiveness of AI implementation after 30 days",
-                                    "Adjust AI usage based on evaluation results",
-                                    "Train the team to use AI effectively",
-                                    "Develop AI usage policies in the company",
-                                    "Plan scaling AI implementation to other departments"
-                                ]
-                            }
-                        ];
+                        topicPrompt = 'tentang penerapan AI untuk bisnis dan produktivitas';
                         break;
-                        
                     case 'pendidikan':
-                        threads = [
-                            {
-                                hook: "Teachers and lecturers must know! 10 ways AI can make teaching more effective and less tiring.",
-                                prompts: [
-                                    "Use ChatGPT to create practice questions with various difficulty levels",
-                                    "Utilize AI to summarize learning materials that are easy to understand",
-                                    "Try AI to create visualizations of complex concepts into infographics",
-                                    "Use AI to create interactive simulations for practical learning",
-                                    "Utilize AI for student learning outcome analysis and understanding gap identification",
-                                    "Try AI to create interactive quizzes that adapt to student abilities",
-                                    "Use AI for translating materials into various languages with accurate context",
-                                    "Utilize AI to create personalized learning recommendations for each student",
-                                    "Try AI to create automatic constructive feedback for student assignments",
-                                    "Use AI to create adaptive curricula based on class progress"
-                                ]
-                            },
-                            {
-                                hook: "Students, here are 10 AI tools that make learning more efficient and boost your grades.",
-                                prompts: [
-                                    "Use Notion AI to automatically create structured lecture notes",
-                                    "Utilize QuillBot to paraphrase text and check for plagiarism",
-                                    "Try Grammarly to ensure essays and assignments are free of grammar errors",
-                                    "Use Otter.ai to automatically record and transcribe lectures",
-                                    "Utilize Wolfram Alpha for solving complex math and science problems",
-                                    "Try ELSA Speak for English pronunciation practice with real-time feedback",
-                                    "Use Mendeley for reference management and automatic citations",
-                                    "Utilize DeepL for more accurate academic translation",
-                                    "Try Khanmigo for personal tutoring in various subjects",
-                                    "Use Anki with AI to create effective flashcards for memorization"
-                                ]
-                            },
-                            {
-                                hook: "Parents want to help their children learn? 10 ways AI can be an educational partner at home.",
-                                prompts: [
-                                    "Use AI storytelling apps that can create personalized educational stories",
-                                    "Utilize AI math solver to help children understand mathematical concepts",
-                                    "Try AI language learning apps for early foreign language introduction",
-                                    "Use AI drawing apps to develop children's visual creativity",
-                                    "Utilize AI quiz makers to create interactive quizzes according to school material",
-                                    "Try AI science experiment simulators for safe virtual experiments",
-                                    "Use AI reading assistant to improve children's reading ability",
-                                    "Utilize AI music composition apps for introduction to music and melody",
-                                    "Try AI coding for kids apps for introduction to programming logic",
-                                    "Use AI educational games for fun learning"
-                                ]
-                            }
-                        ];
+                        topicPrompt = 'tentang pemanfaatan AI untuk pendidikan dan pembelajaran';
                         break;
-                        
-                    default: // 'umum' (General AI)
-                        threads = [
-                            {
-                                hook: "Want to start using AI but don't know where? Here are 10 easy steps for beginners in the world of AI.",
-                                prompts: [
-                                    "Learn basic AI concepts like machine learning and neural networks",
-                                    "Try popular AI tools like ChatGPT to experience their capabilities firsthand",
-                                    "Join AI communities on social media for trend updates and tutorials",
-                                    "Read articles or watch introductory AI videos from trusted sources",
-                                    "Try AI features in apps you already use daily",
-                                    "Learn how to create effective prompts to get the best results",
-                                    "Experiment with various AI types for different tasks",
-                                    "Take introductory online AI courses for deeper understanding",
-                                    "Apply AI to one specific task in your work or study",
-                                    "Join AI discussion forums to ask questions and share experiences"
-                                ]
-                            },
-                            {
-                                hook: "Afraid AI will replace human jobs? In fact, here are 10 skills that are becoming more valuable in the AI era.",
-                                prompts: [
-                                    "Critical thinking ability to evaluate AI outputs",
-                                    "Creativity to combine ideas with AI solutions",
-                                    "Emotional intelligence for authentic human interaction",
-                                    "Adaptive ability to quickly learn new AI tools",
-                                    "Complex problem solving for issues AI cannot handle",
-                                    "Communication skills to explain technical concepts to non-technical audiences",
-                                    "Collaboration to work with AI and human teams",
-                                    "Leadership to guide teams in AI implementation",
-                                    "Ethical judgment for responsible AI use",
-                                    "Digital literacy to understand AI limitations and capabilities"
-                                ]
-                            },
-                            {
-                                hook: "Many myths about AI are circulating. Here are 10 AI facts you need to know, not just hype.",
-                                prompts: [
-                                    "AI does not possess consciousness as depicted in sci-fi movies",
-                                    "Current AI is narrow AI, designed for specific tasks",
-                                    "Data quality is more important than complex algorithms",
-                                    "AI can have biases if trained with biased data",
-                                    "AI is not a human replacement, but an assistive tool",
-                                    "AI ethics is a critical issue in technology development",
-                                    "AI requires significant computing resources",
-                                    "AI regulations are still evolving in various countries",
-                                    "AI can make mistakes just like humans",
-                                    "The future of AI is human-AI collaboration, not domination"
-                                ]
-                            }
-                        ];
+                    default:
+                        topicPrompt = 'tentang berbagai aspek AI secara umum';
                 }
                 
-                const container = document.getElementById('threadsContainer');
-                container.innerHTML = '';
+                // Prompt untuk Gemini API
+                const prompt = `Buat 3 thread unik berupa teks saja (tanpa em-dash maupun emoji) ${topicPrompt} yang praktis dan bisa langsung dipakai.
                 
-                threads.forEach((thread, index) => {
+                Format setiap thread:
+                1. Diawali dengan kalimat hook yang menarik
+                2. Berisi 5-10 tips, tutorial, atau cara praktis
+                3. Setiap tips diawali dengan bullet point (•)
+                
+                Format respons JSON:
+                {
+                    "threads": [
+                        {
+                            "hook": "Kalimat hook yang menarik",
+                            "prompts": ["Tips 1", "Tips 2", ...]
+                        },
+                        ...
+                    ]
+                }
+                
+                Pastikan respons dalam format JSON yang valid.`;
+
+                // Panggil API Gemini
+                const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${apiKey}`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        contents: [{
+                            parts: [{
+                                text: prompt
+                            }]
+                        }]
+                    })
+                });
+
+                if (!response.ok) {
+                    throw new Error(`API Error: ${response.status} ${response.statusText}`);
+                }
+
+                const data = await response.json();
+                const responseText = data.candidates[0].content.parts[0].text;
+                
+                // Ekstrak JSON dari respons
+                let jsonMatch = responseText.match(/\{[\s\S]*\}/);
+                if (!jsonMatch) {
+                    throw new Error('Format respons tidak valid');
+                }
+                
+                const threadsData = JSON.parse(jsonMatch[0]);
+                
+                // Render threads
+                container.innerHTML = '';
+                threadsData.threads.forEach((thread, index) => {
                     const threadElement = createThread(thread, index);
                     container.appendChild(threadElement);
                 });
                 
+                // Update last generated time
                 const now = new Date();
-                document.getElementById('lastGenerated').textContent = now.toLocaleString('en-US'); // Changed to en-US for consistent UI locale
-            }
-
-            // Load sample threads on page load
-            generateSampleThreads(selectedTopic);
-
-            // Simulate daily thread generation
-            // In a real implementation, this would be replaced with actual API calls
-            function simulateDailyGeneration() {
-                const now = new Date();
-                const hours = now.getHours();
-                const minutes = now.getMinutes();
+                document.getElementById('lastGenerated').textContent = now.toLocaleString('id-ID');
                 
-                // If it's 7:00 AM WIB (UTC+7)
-                if (hours === 7 && minutes === 0) {
-                    const apiKey = localStorage.getItem('geminiApiKey');
-                    if (apiKey) {
-                        generateThreadsWithAPI(apiKey, selectedTopic);
-                    } else {
-                        generateSampleThreads(selectedTopic);
-                    }
+                showToast('Konten berhasil dihasilkan!');
+                
+            } catch (error) {
+                console.error('Error:', error);
+                showError(`Gagal menghasilkan konten: ${error.message}`);
+                
+                // Fallback ke sample threads jika error
+                generateSampleThreads(topic);
+            } finally {
+                // Sembunyikan loading state
+                loadingSpinner.classList.remove('active');
+                generateBtn.disabled = false;
+            }
+        }
+
+        // Generate thread contoh untuk demo
+        function generateSampleThreads(topic) {
+            let threads = [];
+            
+            switch(topic) {
+                case 'chatgpt':
+                    threads = [
+                        {
+                            hook: "Punya bisnis kecil atau kerja freelance? Gunakan ChatGPT buat bantu kerja lebih cepat dan hemat waktu.",
+                            prompts: [
+                                "Buat template penawaran harga untuk jasa desain grafis",
+                                "Tulis ulang deskripsi produk ini agar lebih menjual dan jelas",
+                                "Buat daftar pertanyaan wawancara awal untuk klien baru",
+                                "Susun email follow-up profesional untuk prospek yang belum merespons",
+                                "Rancang 3 opsi bio Instagram bisnis yang singkat dan efektif",
+                                "Buat ringkasan pitch produk 60 detik untuk presentasi lisan",
+                                "Ubah testimoni pelanggan ini jadi konten testimonial bergaya narasi",
+                                "Tulis 3 versi headline untuk landing page produk digital",
+                                "Buat jadwal konten seminggu untuk promosi jasa freelance",
+                                "Ubah keunggulan produk ini menjadi 5 bullet point iklan online"
+                            ]
+                        },
+                        {
+                            hook: "Ingin meningkatkan produktivitas kerja? ChatGPT bisa jadi asisten pribadi Anda untuk berbagai tugas.",
+                            prompts: [
+                                "Buat ringkasan meeting dari catatan ini dalam poin-poin penting",
+                                "Susun agenda meeting untuk tim produktif dengan durasi 30 menit",
+                                "Tulis draft email untuk meminta perpanjangan deadline proyek",
+                                "Buat prioritas tugas harian berdasarkan daftar pekerjaan ini",
+                                "Rancang template laporan progress mingguan yang singkat dan jelas",
+                                "Tulis 3 opsi balasan untuk email keluhan pelanggan",
+                                "Buat daftar pertanyaan untuk evaluasi performa karyawan",
+                                "Susun jadwal kerja fleksibel untuk meningkatkan keseimbangan hidup",
+                                "Tulis draft pengumuman internal tentang perubahan kebijakan kantor",
+                                "Buat template feedback konstruktif untuk hasil kerja tim"
+                            ]
+                        },
+                        {
+                            hook: "Mahasiswa dan pelajar, manfaatkan ChatGPT untuk meningkatkan efektivitas belajar Anda.",
+                            prompts: [
+                                "Jelaskan konsep fotosintesis dalam bahasa sederhana",
+                                "Buat ringkasan bab ini dalam 5 poin penting",
+                                "Tulis contoh soal latihan beserta pembahasannya",
+                                "Rancang jadwal belajar efektif untuk persiapan ujian",
+                                "Buat mind map dari topik ini untuk memudahkan pemahaman",
+                                "Tulis esai pendek tentang dampak teknologi terhadap pendidikan",
+                                "Buat daftar pertanyaan diskusi untuk kelompok belajar",
+                                "Jelaskan perbedaan antara teori A dan teori B",
+                                "Rancang metode menghafal efektif untuk materi ini",
+                                "Tulis rencana penelitian singkat untuk tugas akhir"
+                            ]
+                        }
+                    ];
+                    break;
+                    
+                case 'gambar':
+                    threads = [
+                        {
+                            hook: "Mau bikin gambar keren dengan AI? Ini tips praktis buat pemula yang mau coba Midjourney atau DALL-E.",
+                            prompts: [
+                                "Gunakan prompt deskriptif dengan detail spesifik tentang objek, latar, dan suasana",
+                                "Sebutkan gaya seni yang diinginkan seperti foto realistis, ilustrasi, atau lukisan minyak",
+                                "Tambahkan parameter kualitas seperti --ar 16:9 untuk format landscape atau --v 5 untuk versi terbaru",
+                                "Eksperimen dengan kombinasi warna yang tidak biasa untuk hasil yang unik",
+                                "Gunakan referensi seniman terkenal untuk mendapatkan gaya yang mirip",
+                                "Tambahkan detail pencahayaan seperti golden hour, neon, atau soft lighting",
+                                "Coba teknik negative prompting dengan menuliskan apa yang tidak ingin muncul di gambar",
+                                "Kombinasikan beberapa konsep yang berbeda untuk hasil yang kreatif",
+                                "Gunakan fitur image-to-image untuk mengubah foto menjadi gaya seni tertentu",
+                                "Pelajari istilah teknis photography seperti depth of field, bokeh, atau rule of thirds"
+                            ]
+                        },
+                        {
+                            hook: "Hasil gambar AI kurang memuaskan? Coba 10 teknik ini untuk meningkatkan kualitas output.",
+                            prompts: [
+                                "Perbaiki prompt dengan menambahkan detail spesifik tentang tekstur dan material",
+                                "Gunakan prompt bertingkat dengan mulai dari konsep sederhana lalu tambahkan detail",
+                                "Eksperimen dengan berbagai model AI yang berbeda untuk hasil yang beragam",
+                                "Terapkan teknik inpainting untuk memperbaiki bagian gambar yang kurang sempurna",
+                                "Gunakan fitur upscaling untuk meningkatkan resolusi gambar tanpa kehilangan kualitas",
+                                "Kombinasikan beberapa gambar hasil AI dengan teknik image blending",
+                                "Pelajari parameter khusus seperti --chaos untuk tingkat variasi atau --stylize untuk kreativitas",
+                                "Coba pendekatan prompt negatif untuk menghindari elemen yang tidak diinginkan",
+                                "Gunakan referensi visual dengan upload gambar sebagai inspirasi",
+                                "Terapkan post-processing dengan editor gambar untuk sentuhan akhir"
+                            ]
+                        },
+                        {
+                            hook: "Mau monetisasi kemampuan bikin gambar AI? Ini 10 cara menghasilkan uang dari skill ini.",
+                            prompts: [
+                                "Jual hasil gambar AI sebagai stock photo di platform seperti Shutterstock atau Adobe Stock",
+                                "Tawarkan jasa desain grafis dengan bantuan AI untuk efisiensi waktu",
+                                "Buat dan jual custom portrait dalam berbagai gaya seni",
+                                "Cetak hasil gambar AI pada merchandise seperti kaos, mug, atau casing HP",
+                                "Buat konten edukasi tentang cara menggunakan AI gambar di YouTube atau TikTok",
+                                "Tawarkan jasa pembuatan ilustrasi untuk buku atau majalah",
+                                "Jual prompt bundle khusus untuk niche tertentu dengan harga premium",
+                                "Buat komik atau webtoon dengan karakter yang dihasilkan AI",
+                                "Tawarkan jasa pembuatan logo bisnis dengan variasi desain yang banyak",
+                                "Kembangkan NFT art dengan kombinasi teknik AI yang unik"
+                            ]
+                        }
+                    ];
+                    break;
+                    
+                case 'video':
+                    threads = [
+                        {
+                            hook: "Pengen bikin video keren tapi nggak punya skill editing? Coba 10 tool AI video ini yang bikin hidup kamu mudah.",
+                            prompts: [
+                                "Gunakan Runway ML untuk menghapus background video secara otomatis",
+                                "Coba Pictory untuk mengubah artikel menjadi video dalam hitungan menit",
+                                "Manfaatkan Synthesia untuk membuat video presentasi dengan avatar AI",
+                                "Gunakan Descript untuk editing video berbasis teks seperti edit dokumen",
+                                "Coba HeyGen untuk membuat video dengan avatar yang berbicara berbagai bahasa",
+                                "Manfaatkan FlexClip untuk membuat video pendek dengan template siap pakai",
+                                "Gunakan Veed.io untuk menambahkan subtitle otomatis dalam berbagai bahasa",
+                                "Coba Lumen5 untuk mengubah konten blog menjadi video engaging",
+                                "Manfaatkan InVideo untuk membuat video profesional dengan library asset lengkap",
+                                "Gunakan Kapwing untuk kolaborasi editing video tim secara real-time"
+                            ]
+                        },
+                        {
+                            hook: "Mau bikin konten video viral? Ini 10 teknik AI yang bisa bikin video kamu standout.",
+                            prompts: [
+                                "Gunakan AI untuk analisis tren dan prediksi topik yang akan viral",
+                                "Manfaatkan tools AI script writing untuk membuat narasi yang menarik",
+                                "Coba AI voice cloning untuk konsistensi suara narrator",
+                                "Gunakan AI untuk otomasi captioning dengan berbagai gaya teks",
+                                "Manfaatkan AI color grading untuk tampilan visual yang sinematik",
+                                "Coba AI background music generator untuk soundtrack yang sesuai mood",
+                                "Gunakan AI untuk analisis engagement dan optimasi thumbnail",
+                                "Manfaatkan AI untuk auto-editing berdasarkan rhythm dan beat",
+                                "Coba AI untuk membuat efek visual yang rumit dengan mudah",
+                                "Gunakan AI untuk personalisasi konten video untuk berbagai segmen audiens"
+                            ]
+                        },
+                        {
+                            hook: "Content creator wajib tahu! Ini 10 workflow AI yang bikin produksi video kamu 10x lebih cepat.",
+                            prompts: [
+                                "Gunakan AI untuk riset keyword dan topik video yang potensial",
+                                "Manfaatkan AI untuk generate script outline dan struktur konten",
+                                "Coba AI voice over untuk narasi tanpa perlu rekaman manual",
+                                "Gunakan AI untuk auto-generate B-roll footage yang relevan",
+                                "Manfaatkan AI untuk editing cepat dengan smart cut detection",
+                                "Coba AI untuk color correction otomatis yang konsisten",
+                                "Gunakan AI untuk generate thumbnail yang eye-catching",
+                                "Manfaatkan AI untuk analisis performa video dan rekomendasi optimasi",
+                                "Coba AI untuk repurposing konten video ke berbagai platform",
+                                "Gunakan AI untuk scheduling dan publishing otomatis ke multiple platform"
+                            ]
+                        }
+                    ];
+                    break;
+                    
+                case 'bisnis':
+                    threads = [
+                        {
+                            hook: "Pemilik bisnis UKM wajib coba! 10 tool AI yang bisa bikin operasional bisnis kamu lebih efisien.",
+                            prompts: [
+                                "Gunakan ChatGPT untuk membuat draft email profesional ke klien atau supplier",
+                                "Manfaatkan Canva AI untuk desain grafis promosi tanpa skill design",
+                                "Coba Jasper AI untuk membuat copywriting marketing yang menjual",
+                                "Gunakan Notion AI untuk mengelola proyek dan dokumentasi bisnis",
+                                "Manfaatkan Fireflies.ai untuk transkripsi meeting otomatis",
+                                "Coba Crystal untuk analisis kepribadian dan komunikasi dengan klien",
+                                "Gunakan Zia AI dari Zoho untuk analisis penjualan dan prediksi tren",
+                                "Manfaatkan MonkeyLearn untuk analisis sentimen customer feedback",
+                                "Coba X.ai untuk scheduling meeting otomatis tanpa email bolak-balik",
+                                "Gunakan Timely untuk tracking waktu produktivitas tim otomatis"
+                            ]
+                        },
+                        {
+                            hook: "Mau scale up bisnis tapi terbatas SDM? 10 strategi AI ini bisa jadi solusi hemat biaya.",
+                            prompts: [
+                                "Implementasikan chatbot AI untuk customer service 24/7",
+                                "Gunakan AI untuk personalisasi marketing campaign berdasarkan perilaku user",
+                                "Manfaatkan AI untuk prediksi inventory dan optimasi stok",
+                                "Coba AI pricing optimization untuk menentukan harga produk dinamis",
+                                "Gunakan AI untuk analisis kompetitor dan market intelligence",
+                                "Manfaatkan AI untuk lead scoring dan prioritas follow up sales",
+                                "Coba AI untuk otomasi laporan keuangan dan analisis cash flow",
+                                "Gunakan AI untuk deteksi fraud dan keamanan transaksi",
+                                "Manfaatkan AI untuk rekomendasi product bundling yang optimal",
+                                "Coba AI untuk forecasting demand dan perencanaan produksi"
+                            ]
+                        },
+                        {
+                            hook: "Pebisnis pemula, mulai dari mana pakai AI? Ini 10 langkah praktis implementasi AI di bisnis kecil.",
+                            prompts: [
+                                "Identifikasi proses bisnis yang paling memakan waktu dan bisa diotomasi",
+                                "Pilih satu tool AI yang sesuai kebutuhan dan budget bisnis",
+                                "Pelajari tutorial dasar penggunaan tool AI yang dipilih",
+                                "Implementasikan gradual di satu departemen dulu sebagai pilot project",
+                                "Kumpulkan feedback dari tim yang menggunakan tool AI",
+                                "Evaluasi ROI dan efektivitas implementasi AI setelah 30 hari",
+                                "Sesuaikan penggunaan AI berdasarkan hasil evaluasi",
+                                "Latih tim untuk menggunakan AI secara efektif",
+                                "Kembangkan kebijakan penggunaan AI di perusahaan",
+                                "Rencanakan scaling implementasi AI ke departemen lain"
+                            ]
+                        }
+                    ];
+                    break;
+                    
+                case 'pendidikan':
+                    threads = [
+                        {
+                            hook: "Guru dan dosen wajib tahu! 10 cara AI bisa bikin mengajar lebih efektif dan kurang melelahkan.",
+                            prompts: [
+                                "Gunakan ChatGPT untuk membuat soal latihan dengan berbagai tingkat kesulitan",
+                                "Manfaatkan AI untuk membuat ringkasan materi pelajaran yang mudah dipahami",
+                                "Coba AI untuk membuat visualisasi konsep kompleks menjadi infografis",
+                                "Gunakan AI untuk membuat simulasi interaktif untuk pembelajaran praktik",
+                                "Manfaatkan AI untuk analisis hasil belajar siswa dan identifikasi gap pemahaman",
+                                "Coba AI untuk membuat quiz interaktif yang menyesuaikan dengan kemampuan siswa",
+                                "Gunakan AI untuk translasi materi ke berbagai bahasa dengan konteks yang tepat",
+                                "Manfaatkan AI untuk membuat rekomendasi belajar personal untuk setiap siswa",
+                                "Coba AI untuk membuat feedback otomatis yang konstruktif untuk tugas siswa",
+                                "Gunakan AI untuk membuat kurikulum adaptif berdasarkan kemajuan kelas"
+                            ]
+                        },
+                        {
+                            hook: "Mahasiswa, ini 10 tool AI yang bikin belajar lebih efisien dan nilai kamu makin memuaskan.",
+                            prompts: [
+                                "Gunakan Notion AI untuk membuat catatan kuliah terstruktur otomatis",
+                                "Manfaatkan QuillBot untuk paraphrase teks dan cek plagiarism",
+                                "Coba Grammarly untuk memastikan esai dan tugas bebas dari kesalahan grammar",
+                                "Gunakan Otter.ai untuk merekam dan transkripsi kuliah secara otomatis",
+                                "Manfaatkan Wolfram Alpha untuk pemecahan masalah matematika dan sains kompleks",
+                                "Coba ELSA Speak untuk latihan pronunciation bahasa Inggris dengan feedback real-time",
+                                "Gunakan Mendeley untuk manajemen referensi dan sitasi otomatis",
+                                "Manfaatkan DeepL untuk translasi akademik yang lebih akurat",
+                                "Coba Khanmigo untuk tutor personal dalam berbagai mata pelajaran",
+                                "Gunakan Anki dengan AI untuk membuat flashcard yang efektif untuk menghafal"
+                            ]
+                        },
+                        {
+                            hook: "Orang tua ingin bantu anak belajar? 10 cara AI bisa jadi partner pendidikan di rumah.",
+                            prompts: [
+                                "Gunakan aplikasi bercerita AI yang bisa membuat cerita edukatif personal",
+                                "Manfaatkan AI math solver untuk membantu anak memahami konsep matematika",
+                                "Coba AI language learning apps untuk pengenalan bahasa asing sejak dini",
+                                "Gunakan AI drawing apps untuk mengembangkan kreativitas visual anak",
+                                "Manfaatkan AI quiz maker untuk membuat kuis interaktif sesuai materi sekolah",
+                                "Coba AI science experiment simulator untuk percobaan virtual yang aman",
+                                "Gunakan AI reading assistant untuk meningkatkan kemampuan membaca anak",
+                                "Manfaatkan AI music composition apps untuk pengenalan musik dan melodi",
+                                "Coba AI coding for kids apps untuk pengenalan logika pemrograman",
+                                "Gunakan AI educational games untuk pembelajaran yang menyenangkan"
+                            ]
+                        }
+                    ];
+                    break;
+                    
+                default: // umum
+                    threads = [
+                        {
+                            hook: "Pengen mulai pakai AI tapi bingung dari mana? Ini 10 langkah mudah untuk pemula di dunia AI.",
+                            prompts: [
+                                "Pelajari konsep dasar AI seperti machine learning dan neural networks",
+                                "Coba tool AI populer seperti ChatGPT untuk merasakan langsung kemampuannya",
+                                "Ikuti komunitas AI di media sosial untuk update tren dan tutorial",
+                                "Baca artikel atau nonton video pengantar AI dari sumber terpercaya",
+                                "Coba fitur AI di aplikasi yang sudah kamu gunakan sehari-hari",
+                                "Pelajari cara membuat prompt yang efektif untuk mendapatkan hasil terbaik",
+                                "Eksperimen dengan berbagai jenis AI untuk tugas yang berbeda",
+                                "Ikuti kursus online dasar-dasar AI untuk pemahaman lebih mendalam",
+                                "Terapkan AI untuk satu tugas spesifik dalam pekerjaan atau studi kamu",
+                                "Bergabung dengan forum diskusi AI untuk bertanya dan berbagi pengalaman"
+                            ]
+                        },
+                        {
+                            hook: "Takut AI bakal gantikan pekerjaan manusia? Faktanya, ini 10 skill yang makin berharga di era AI.",
+                            prompts: [
+                                "Kemampuan critical thinking untuk mengevaluasi hasil AI",
+                                "Kreativitas untuk menggabungkan ide dengan solusi AI",
+                                "Emotional intelligence untuk interaksi manusia yang autentik",
+                                "Kemampuan adaptif untuk belajar tool AI baru dengan cepat",
+                                "Complex problem solving untuk masalah yang tidak bisa diatasi AI",
+                                "Kemampuan komunikasi untuk menjelaskan konsep teknis ke non-teknis",
+                                "Collaboration untuk bekerja sama dengan AI dan tim manusia",
+                                "Leadership untuk mengarahkan tim dalam implementasi AI",
+                                "Ethical judgment untuk penggunaan AI yang bertanggung jawab",
+                                "Digital literacy untuk memahami batasan dan kemampuan AI"
+                            ]
+                        },
+                        {
+                            hook: "Banyak mitos tentang AI yang beredar. Ini 10 fakta AI yang perlu kamu ketahui, bukan sekadar hype.",
+                            prompts: [
+                                "AI tidak memiliki kesadaran seperti yang digambarkan di film sci-fi",
+                                "AI saat ini bersifat narrow AI, dirancang untuk tugas spesifik",
+                                "Data kualitas lebih penting daripada algoritma kompleks",
+                                "AI bisa memiliki bias jika dilatih dengan data bias",
+                                "AI bukan pengganti manusia, melainkan alat bantu",
+                                "Etika AI jadi isu penting dalam pengembangan teknologi",
+                                "AI membutuhkan sumber daya komputasi yang besar",
+                                "Regulasi AI masih berkembang di berbagai negara",
+                                "AI bisa membuat kesalahan seperti halnya manusia",
+                                "Masa depan AI adalah kolaborasi manusia-AI, bukan dominasi"
+                            ]
+                        }
+                    ];
+            }
+            
+            const container = document.getElementById('threadsContainer');
+            container.innerHTML = '';
+            
+            threads.forEach((thread, index) => {
+                const threadElement = createThread(thread, index);
+                container.appendChild(threadElement);
+            });
+            
+            // Update last generated time
+            const now = new Date();
+            document.getElementById('lastGenerated').textContent = now.toLocaleString('id-ID');
+        }
+
+        // Load sample threads on page load
+        generateSampleThreads(selectedTopic);
+
+        // Simulate daily thread generation
+        // In a real implementation, this would be replaced with actual API calls
+        function simulateDailyGeneration() {
+            const now = new Date();
+            const hours = now.getHours();
+            const minutes = now.getMinutes();
+            
+            // If it's 7:00 AM WIB (UTC+7)
+            if (hours === 7 && minutes === 0) {
+                const apiKey = localStorage.getItem('geminiApiKey');
+                if (apiKey) {
+                    generateThreadsWithAPI(apiKey, selectedTopic);
+                } else {
+                    generateSampleThreads(selectedTopic);
                 }
             }
+        }
 
-            // Check every minute if it's time to generate new threads
-            setInterval(simulateDailyGeneration, 60000);
-        });
-    </script>
+        // Check every minute if it's time to generate new threads
+        setInterval(simulateDailyGeneration, 60000);
+    });
+</script>
 </body>
 </html>
