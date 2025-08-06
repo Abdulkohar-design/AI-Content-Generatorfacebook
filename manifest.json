@@ -1,0 +1,178 @@
+{
+    "name": "AI Content Generator",
+    "short_name": "AI Generator",
+    "description": "Generate AI-powered content for social media with advanced features",
+    "start_url": "/",
+    "display": "standalone",
+    "background_color": "#6a11cb",
+    "theme_color": "#6a11cb",
+    "orientation": "portrait-primary",
+    "scope": "/",
+    "lang": "id",
+    "categories": ["productivity", "utilities", "social"],
+    "icons": [
+        {
+            "src": "icons/icon-72x72.png",
+            "sizes": "72x72",
+            "type": "image/png",
+            "purpose": "maskable any"
+        },
+        {
+            "src": "icons/icon-96x96.png",
+            "sizes": "96x96",
+            "type": "image/png",
+            "purpose": "maskable any"
+        },
+        {
+            "src": "icons/icon-128x128.png",
+            "sizes": "128x128",
+            "type": "image/png",
+            "purpose": "maskable any"
+        },
+        {
+            "src": "icons/icon-144x144.png",
+            "sizes": "144x144",
+            "type": "image/png",
+            "purpose": "maskable any"
+        },
+        {
+            "src": "icons/icon-152x152.png",
+            "sizes": "152x152",
+            "type": "image/png",
+            "purpose": "maskable any"
+        },
+        {
+            "src": "icons/icon-192x192.png",
+            "sizes": "192x192",
+            "type": "image/png",
+            "purpose": "maskable any"
+        },
+        {
+            "src": "icons/icon-384x384.png",
+            "sizes": "384x384",
+            "type": "image/png",
+            "purpose": "maskable any"
+        },
+        {
+            "src": "icons/icon-512x512.png",
+            "sizes": "512x512",
+            "type": "image/png",
+            "purpose": "maskable any"
+        }
+    ],
+    "shortcuts": [
+        {
+            "name": "Generate Content",
+            "short_name": "Generate",
+            "description": "Quickly generate new AI content",
+            "url": "/?action=generate",
+            "icons": [
+                {
+                    "src": "icons/shortcut-generate.png",
+                    "sizes": "96x96"
+                }
+            ]
+        },
+        {
+            "name": "Saved Content",
+            "short_name": "Saved",
+            "description": "View saved content",
+            "url": "/?action=saved",
+            "icons": [
+                {
+                    "src": "icons/shortcut-saved.png",
+                    "sizes": "96x96"
+                }
+            ]
+        },
+        {
+            "name": "Templates",
+            "short_name": "Templates",
+            "description": "Browse content templates",
+            "url": "/?action=templates",
+            "icons": [
+                {
+                    "src": "icons/shortcut-templates.png",
+                    "sizes": "96x96"
+                }
+            ]
+        }
+    ],
+    "screenshots": [
+        {
+            "src": "screenshots/desktop-1.png",
+            "sizes": "1280x720",
+            "type": "image/png",
+            "form_factor": "wide",
+            "label": "Dashboard view of AI Content Generator"
+        },
+        {
+            "src": "screenshots/mobile-1.png",
+            "sizes": "390x844",
+            "type": "image/png",
+            "form_factor": "narrow",
+            "label": "Mobile view of content generation"
+        },
+        {
+            "src": "screenshots/desktop-2.png",
+            "sizes": "1280x720",
+            "type": "image/png",
+            "form_factor": "wide",
+            "label": "Template gallery and analytics"
+        }
+    ],
+    "related_applications": [],
+    "prefer_related_applications": false,
+    "edge_side_panel": {
+        "preferred_width": 400
+    },
+    "launch_handler": {
+        "client_mode": "focus-existing"
+    },
+    "handle_links": "preferred",
+    "protocol_handlers": [
+        {
+            "protocol": "web+ai-content",
+            "url": "/?action=generate&topic=%s"
+        }
+    ],
+    "file_handlers": [
+        {
+            "action": "/?action=import",
+            "accept": {
+                "text/plain": [".txt"],
+                "application/json": [".json"]
+            }
+        }
+    ],
+    "share_target": {
+        "action": "/?action=share",
+        "method": "POST",
+        "enctype": "multipart/form-data",
+        "params": {
+            "title": "title",
+            "text": "text",
+            "url": "url"
+        }
+    },
+    "permissions": [
+        "notifications",
+        "background-sync",
+        "storage"
+    ],
+    "features": [
+        "Cross Platform",
+        "fast",
+        "simple"
+    ],
+    "developer": {
+        "name": "AI Content Generator Team",
+        "url": "https://aicontentgenerator.com"
+    },
+    "homepage_url": "https://aicontentgenerator.com",
+    "scope_extensions": [
+        {
+            "origin": "https://api.aicontentgenerator.com"
+        }
+    ]
+} 
