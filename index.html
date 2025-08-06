@@ -110,8 +110,460 @@
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-    <script src="features.js"></script>
-    <script src="export.js"></script>
-    <script src="advanced-features.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Variabel untuk menyimpan topik yang dipilih
+            let selectedTopic = 'umum';
+            
+            // Theme Management
+            class ThemeManager {
+                constructor() {
+                    this.currentTheme = localStorage.getItem('theme') || 'light';
+                    this.init();
+                }
+
+                init() {
+                    this.setupTheme();
+                    this.setupToggle();
+                }
+
+                setupTheme() {
+                    document.documentElement.setAttribute('data-theme', this.currentTheme);
+                }
+
+                setupToggle() {
+                    const toggle = document.getElementById('themeToggle');
+                    if (toggle) {
+                        toggle.addEventListener('click', () => this.toggle());
+                        this.updateToggleIcon();
+                    }
+                }
+
+                toggle() {
+                    this.currentTheme = this.currentTheme === 'light' ? 'dark' : 'light';
+                    document.documentElement.setAttribute('data-theme', this.currentTheme);
+                    localStorage.setItem('theme', this.currentTheme);
+                    this.updateToggleIcon();
+                }
+
+                updateToggleIcon() {
+                    const toggle = document.getElementById('themeToggle');
+                    if (toggle) {
+                        toggle.innerHTML = this.currentTheme === 'light' ? 
+                            '<i class="bi bi-moon-fill"></i>' : 
+                            '<i class="bi bi-sun-fill"></i>';
+                    }
+                }
+            }
+
+            // Initialize theme manager
+            const themeManager = new ThemeManager();
+            
+            // Cek API Key yang tersimpan
+            const savedApiKey = localStorage.getItem('geminiApiKey');
+            if (savedApiKey) {
+                document.getElementById('apiKey').value = savedApiKey;
+                updateApiStatus(true);
+            } else {
+                updateApiStatus(false);
+            }
+
+            // Simpan API Key
+            document.getElementById('saveApiKey').addEventListener('click', function() {
+                const apiKey = document.getElementById('apiKey').value;
+                if (apiKey.trim() !== '') {
+                    localStorage.setItem('geminiApiKey', apiKey);
+                    updateApiStatus(true);
+                    showToast('API Key berhasil disimpan');
+                } else {
+                    showToast('API Key tidak boleh kosong', 'warning');
+                }
+            });
+
+            // Topic selector
+            document.querySelectorAll('.topic-badge').forEach(badge => {
+                badge.addEventListener('click', function() {
+                    document.querySelectorAll('.topic-badge').forEach(b => b.classList.remove('active'));
+                    this.classList.add('active');
+                    selectedTopic = this.getAttribute('data-topic');
+                });
+            });
+
+            // Generate Manual Button
+            document.getElementById('generateBtn').addEventListener('click', function() {
+                const apiKey = localStorage.getItem('geminiApiKey');
+                if (!apiKey) {
+                    showError('Silakan masukkan API Key terlebih dahulu');
+                    return;
+                }
+                
+                generateThreadsWithAPI(apiKey, selectedTopic);
+            });
+
+            // Fungsi untuk memperbarui status API
+            function updateApiStatus(isConnected) {
+                const statusIndicator = document.getElementById('apiStatus');
+                const statusText = document.getElementById('apiStatusText');
+                
+                if (isConnected) {
+                    statusIndicator.classList.add('status-active');
+                    statusIndicator.classList.remove('status-inactive');
+                    statusText.textContent = 'Status API: Terhubung';
+                } else {
+                    statusIndicator.classList.add('status-inactive');
+                    statusIndicator.classList.remove('status-active');
+                    statusText.textContent = 'Status API: Tidak terhubung';
+                }
+            }
+
+            // Fungsi untuk menampilkan toast
+            function showToast(message, type = 'success') {
+                const toastElement = document.getElementById('copyToast');
+                const toastBody = toastElement.querySelector('.toast-body');
+                toastBody.textContent = message;
+                
+                const toast = new bootstrap.Toast(toastElement);
+                toast.show();
+            }
+
+            // Fungsi untuk menampilkan error
+            function showError(message) {
+                const toastElement = document.getElementById('errorToast');
+                const errorMessage = document.getElementById('errorMessage');
+                errorMessage.textContent = message;
+                
+                const toast = new bootstrap.Toast(toastElement);
+                toast.show();
+            }
+
+            // Fungsi untuk menyalin teks
+            function copyToClipboard(text) {
+                const textarea = document.createElement('textarea');
+                textarea.value = text;
+                textarea.style.position = 'fixed';
+                textarea.style.opacity = '0';
+                document.body.appendChild(textarea);
+                textarea.select();
+                
+                try {
+                    const successful = document.execCommand('copy');
+                    if (successful) {
+                        showToast('Teks berhasil disalin');
+                    } else {
+                        showToast('Gagal menyalin teks', 'danger');
+                    }
+                } catch (err) {
+                    showToast('Gagal menyalin teks', 'danger');
+                    console.error('Gagal menyalin: ', err);
+                }
+                
+                document.body.removeChild(textarea);
+            }
+
+            // Fungsi untuk membuat thread
+            function createThread(threadData, index) {
+                const threadCard = document.createElement('div');
+                threadCard.className = 'thread-card';
+                
+                const header = document.createElement('div');
+                header.className = 'thread-header';
+                header.textContent = `Thread ${index + 1}`;
+                
+                const hook = document.createElement('div');
+                hook.className = 'prompt-item';
+                
+                const hookText = document.createElement('span');
+                hookText.textContent = threadData.hook;
+                
+                const hookCopyBtn = document.createElement('button');
+                hookCopyBtn.className = 'copy-btn';
+                hookCopyBtn.innerHTML = '<i class="bi bi-clipboard"></i>';
+                hookCopyBtn.addEventListener('click', function() {
+                    copyToClipboard(threadData.hook);
+                });
+                
+                hook.appendChild(hookText);
+                hook.appendChild(hookCopyBtn);
+                
+                const promptsContainer = document.createElement('div');
+                
+                threadData.prompts.forEach(prompt => {
+                    const promptItem = document.createElement('div');
+                    promptItem.className = 'prompt-item';
+                    
+                    const promptText = document.createElement('span');
+                    promptText.textContent = `• ${prompt}`;
+                    
+                    const promptCopyBtn = document.createElement('button');
+                    promptCopyBtn.className = 'copy-btn';
+                    promptCopyBtn.innerHTML = '<i class="bi bi-clipboard"></i>';
+                    promptCopyBtn.addEventListener('click', function() {
+                        copyToClipboard(`• ${prompt}`);
+                    });
+                    
+                    promptItem.appendChild(promptText);
+                    promptItem.appendChild(promptCopyBtn);
+                    promptsContainer.appendChild(promptItem);
+                });
+                
+                const ctaSection = document.createElement('div');
+                ctaSection.className = 'cta-section';
+                
+                const ctaText = document.createElement('div');
+                ctaText.innerHTML = `
+                    PS: Saya juga buka kelas AI untuk kamu yang benar-benar awam!<br>
+                    Keunggulannya: setiap hari ada postingan tutorial terbaru, update terus.<br>
+                    Belajar bisa kapan saja mulai jam 08.00 sampai 00.00 WIB.<br>
+                    Bebas belajar sampai bisa, sistem bayar per 10 hari.<br>
+                    Dan yang paling penting, harganya terjangkau dan disesuaikan.<br>
+                    Langsung klik: https://lynk.id/vdmax
+                `;
+                
+                const ctaCopyBtn = document.createElement('button');
+                ctaCopyBtn.className = 'btn btn-sm btn-outline-primary';
+                ctaCopyBtn.innerHTML = '<i class="bi bi-clipboard me-1"></i> Salin CTA';
+                ctaCopyBtn.addEventListener('click', function() {
+                    const ctaFullText = `PS: Saya juga buka kelas AI untuk kamu yang benar-benar awam!\nKeunggulannya: setiap hari ada postingan tutorial terbaru, update terus.\nBelajar bisa kapan saja mulai jam 08.00 sampai 00.00 WIB.\nBebas belajar sampai bisa, sistem bayar per 10 hari.\nDan yang paling penting, harganya terjangkau dan disesuaikan.\nLangsung klik: https://lynk.id/vdmax`;
+                    copyToClipboard(ctaFullText);
+                });
+                
+                const ctaContainer = document.createElement('div');
+                ctaContainer.className = 'd-flex justify-content-between align-items-center';
+                ctaContainer.appendChild(ctaText);
+                ctaContainer.appendChild(ctaCopyBtn);
+                
+                ctaSection.appendChild(ctaContainer);
+                
+                threadCard.appendChild(header);
+                threadCard.appendChild(hook);
+                threadCard.appendChild(promptsContainer);
+                threadCard.appendChild(ctaSection);
+                
+                return threadCard;
+            }
+
+            // Generate thread dengan API Gemini
+            async function generateThreadsWithAPI(apiKey, topic) {
+                const loadingSpinner = document.getElementById('loadingSpinner');
+                const generateBtn = document.getElementById('generateBtn');
+                const container = document.getElementById('threadsContainer');
+                
+                loadingSpinner.classList.add('active');
+                generateBtn.disabled = true;
+                container.innerHTML = '';
+                
+                try {
+                    let topicPrompt = '';
+                    switch(topic) {
+                        case 'chatgpt':
+                            topicPrompt = 'tentang strategi penggunaan ChatGPT';
+                            break;
+                        case 'gambar':
+                            topicPrompt = 'tentang AI untuk pembuatan gambar seperti Midjourney, DALL-E, atau Stable Diffusion';
+                            break;
+                        case 'video':
+                            topicPrompt = 'tentang AI untuk pembuatan dan editing video';
+                            break;
+                        case 'bisnis':
+                            topicPrompt = 'tentang penerapan AI untuk bisnis dan produktivitas';
+                            break;
+                        case 'pendidikan':
+                            topicPrompt = 'tentang pemanfaatan AI untuk pendidikan dan pembelajaran';
+                            break;
+                        default:
+                            topicPrompt = 'tentang berbagai aspek AI secara umum';
+                    }
+                    
+                    const prompt = `Buat 3 thread unik berupa teks saja (tanpa em-dash maupun emoji) ${topicPrompt} yang praktis dan bisa langsung dipakai.
+                    
+                    Format setiap thread:
+                    1. Diawali dengan kalimat hook yang menarik
+                    2. Berisi 5-10 tips, tutorial, atau cara praktis
+                    3. Setiap tips diawali dengan bullet point (•)
+                    
+                    Format respons JSON:
+                    {
+                        "threads": [
+                            {
+                                "hook": "Kalimat hook yang menarik",
+                                "prompts": ["Tips 1", "Tips 2", ...]
+                            },
+                            ...
+                        ]
+                    }
+                    
+                    Pastikan respons dalam format JSON yang valid.`;
+
+                    const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${apiKey}`, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify({
+                            contents: [{
+                                parts: [{
+                                    text: prompt
+                                }]
+                            }]
+                        })
+                    });
+
+                    if (!response.ok) {
+                        throw new Error(`API Error: ${response.status} ${response.statusText}`);
+                    }
+
+                    const data = await response.json();
+                    const responseText = data.candidates[0].content.parts[0].text;
+                    
+                    let jsonMatch = responseText.match(/\{[\s\S]*\}/);
+                    if (!jsonMatch) {
+                        throw new Error('Format respons tidak valid');
+                    }
+                    
+                    const threadsData = JSON.parse(jsonMatch[0]);
+                    
+                    container.innerHTML = '';
+                    threadsData.threads.forEach((thread, index) => {
+                        const threadElement = createThread(thread, index);
+                        container.appendChild(threadElement);
+                    });
+                    
+                    const now = new Date();
+                    document.getElementById('lastGenerated').textContent = now.toLocaleString('id-ID');
+                    
+                    showToast('Konten berhasil dihasilkan!');
+                    
+                } catch (error) {
+                    console.error('Error:', error);
+                    showError(`Gagal menghasilkan konten: ${error.message}`);
+                    
+                    generateSampleThreads(topic);
+                } finally {
+                    loadingSpinner.classList.remove('active');
+                    generateBtn.disabled = false;
+                }
+            }
+
+            // Generate thread contoh untuk demo
+            function generateSampleThreads(topic) {
+                let threads = [];
+                
+                switch(topic) {
+                    case 'chatgpt':
+                        threads = [
+                            {
+                                hook: "Punya bisnis kecil atau kerja freelance? Gunakan ChatGPT buat bantu kerja lebih cepat dan hemat waktu.",
+                                prompts: [
+                                    "Buat template penawaran harga untuk jasa desain grafis",
+                                    "Tulis ulang deskripsi produk ini agar lebih menjual dan jelas",
+                                    "Buat daftar pertanyaan wawancara awal untuk klien baru",
+                                    "Susun email follow-up profesional untuk prospek yang belum merespons",
+                                    "Rancang 3 opsi bio Instagram bisnis yang singkat dan efektif",
+                                    "Buat ringkasan pitch produk 60 detik untuk presentasi lisan",
+                                    "Ubah testimoni pelanggan ini jadi konten testimonial bergaya narasi",
+                                    "Tulis 3 versi headline untuk landing page produk digital",
+                                    "Buat jadwal konten seminggu untuk promosi jasa freelance",
+                                    "Ubah keunggulan produk ini menjadi 5 bullet point iklan online"
+                                ]
+                            },
+                            {
+                                hook: "Ingin meningkatkan produktivitas kerja? ChatGPT bisa jadi asisten pribadi Anda untuk berbagai tugas.",
+                                prompts: [
+                                    "Buat ringkasan meeting dari catatan ini dalam poin-poin penting",
+                                    "Susun agenda meeting untuk tim produktif dengan durasi 30 menit",
+                                    "Tulis draft email untuk meminta perpanjangan deadline proyek",
+                                    "Buat prioritas tugas harian berdasarkan daftar pekerjaan ini",
+                                    "Rancang template laporan progress mingguan yang singkat dan jelas",
+                                    "Tulis 3 opsi balasan untuk email keluhan pelanggan",
+                                    "Buat daftar pertanyaan untuk evaluasi performa karyawan",
+                                    "Susun jadwal kerja fleksibel untuk meningkatkan keseimbangan hidup",
+                                    "Tulis draft pengumuman internal tentang perubahan kebijakan kantor",
+                                    "Buat template feedback konstruktif untuk hasil kerja tim"
+                                ]
+                            },
+                            {
+                                hook: "Mahasiswa dan pelajar, manfaatkan ChatGPT untuk meningkatkan efektivitas belajar Anda.",
+                                prompts: [
+                                    "Jelaskan konsep fotosintesis dalam bahasa sederhana",
+                                    "Buat ringkasan bab ini dalam 5 poin penting",
+                                    "Tulis contoh soal latihan beserta pembahasannya",
+                                    "Rancang jadwal belajar efektif untuk persiapan ujian",
+                                    "Buat mind map dari topik ini untuk memudahkan pemahaman",
+                                    "Tulis esai pendek tentang dampak teknologi terhadap pendidikan",
+                                    "Buat daftar pertanyaan diskusi untuk kelompok belajar",
+                                    "Jelaskan perbedaan antara teori A dan teori B",
+                                    "Rancang metode menghafal efektif untuk materi ini",
+                                    "Tulis rencana penelitian singkat untuk tugas akhir"
+                                ]
+                            }
+                        ];
+                        break;
+                        
+                    default: // umum
+                        threads = [
+                            {
+                                hook: "Pengen mulai pakai AI tapi bingung dari mana? Ini 10 langkah mudah untuk pemula di dunia AI.",
+                                prompts: [
+                                    "Pelajari konsep dasar AI seperti machine learning dan neural networks",
+                                    "Coba tool AI populer seperti ChatGPT untuk merasakan langsung kemampuannya",
+                                    "Ikuti komunitas AI di media sosial untuk update tren dan tutorial",
+                                    "Baca artikel atau nonton video pengantar AI dari sumber terpercaya",
+                                    "Coba fitur AI di aplikasi yang sudah kamu gunakan sehari-hari",
+                                    "Pelajari cara membuat prompt yang efektif untuk mendapatkan hasil terbaik",
+                                    "Eksperimen dengan berbagai jenis AI untuk tugas yang berbeda",
+                                    "Ikuti kursus online dasar-dasar AI untuk pemahaman lebih mendalam",
+                                    "Terapkan AI untuk satu tugas spesifik dalam pekerjaan atau studi kamu",
+                                    "Bergabung dengan forum diskusi AI untuk bertanya dan berbagi pengalaman"
+                                ]
+                            },
+                            {
+                                hook: "Takut AI bakal gantikan pekerjaan manusia? Faktanya, ini 10 skill yang makin berharga di era AI.",
+                                prompts: [
+                                    "Kemampuan critical thinking untuk mengevaluasi hasil AI",
+                                    "Kreativitas untuk menggabungkan ide dengan solusi AI",
+                                    "Emotional intelligence untuk interaksi manusia yang autentik",
+                                    "Kemampuan adaptif untuk belajar tool AI baru dengan cepat",
+                                    "Complex problem solving untuk masalah yang tidak bisa diatasi AI",
+                                    "Kemampuan komunikasi untuk menjelaskan konsep teknis ke non-teknis",
+                                    "Collaboration untuk bekerja sama dengan AI dan tim manusia",
+                                    "Leadership untuk mengarahkan tim dalam implementasi AI",
+                                    "Ethical judgment untuk penggunaan AI yang bertanggung jawab",
+                                    "Digital literacy untuk memahami batasan dan kemampuan AI"
+                                ]
+                            },
+                            {
+                                hook: "Banyak mitos tentang AI yang beredar. Ini 10 fakta AI yang perlu kamu ketahui, bukan sekadar hype.",
+                                prompts: [
+                                    "AI tidak memiliki kesadaran seperti yang digambarkan di film sci-fi",
+                                    "AI saat ini bersifat narrow AI, dirancang untuk tugas spesifik",
+                                    "Data kualitas lebih penting daripada algoritma kompleks",
+                                    "AI bisa memiliki bias jika dilatih dengan data bias",
+                                    "AI bukan pengganti manusia, melainkan alat bantu",
+                                    "Etika AI jadi isu penting dalam pengembangan teknologi",
+                                    "AI membutuhkan sumber daya komputasi yang besar",
+                                    "Regulasi AI masih berkembang di berbagai negara",
+                                    "AI bisa membuat kesalahan seperti halnya manusia",
+                                    "Masa depan AI adalah kolaborasi manusia-AI, bukan dominasi"
+                                ]
+                            }
+                        ];
+                }
+                
+                const container = document.getElementById('threadsContainer');
+                container.innerHTML = '';
+                
+                threads.forEach((thread, index) => {
+                    const threadElement = createThread(thread, index);
+                    container.appendChild(threadElement);
+                });
+                
+                const now = new Date();
+                document.getElementById('lastGenerated').textContent = now.toLocaleString('id-ID');
+            }
+
+            // Load sample threads on page load
+            generateSampleThreads(selectedTopic);
+        });
+    </script>
 </body>
 </html>
