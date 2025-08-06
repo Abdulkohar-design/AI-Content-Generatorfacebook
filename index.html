@@ -685,7 +685,7 @@
 
                     if (record.format === 'thread') {
                         record.content.threads.forEach((thread, index) => {
-                            const threadElement = createThread(thread, index, true); // true for history, disable editing
+                            const threadElement = createThread(thread, index, true, record.cta); // true for history, disable editing
                             threadElement.querySelector('.thread-header').textContent = `Thread ${index + 1}`; // Adjust header for history view
                             historyCard.appendChild(threadElement);
                         });
@@ -1119,7 +1119,7 @@
                     // Twitter/X Preview
                     twitterText = `${mainContent}\n\n`; // Removed emoji from start
                     prompts.forEach(p => twitterText += `${p}\n`);
-                    twitterText += `\n${cleanedCda}\n\n#AI #TipsAI #Tutorial`;
+                    twitterText += `\n${cleanedCta}\n\n#AI #TipsAI #Tutorial`; // <--- Perbaikan di sini
 
                     // Instagram Preview
                     instagramText = `*${mainContent}*\n\n`; // Kept asterisks for bolding, removed emoji from start
