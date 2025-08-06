@@ -61,7 +61,7 @@
     </nav>
 
     <!-- Dashboard Section -->
-    <div id="dashboard" class="page-section">
+    <div id="dashboard" class="page-section active">
         <div class="header">
             <div class="container">
                 <h1 class="text-center">Dashboard</h1>
@@ -71,11 +71,31 @@
 
         <div class="container">
             <!-- Analytics Stats -->
-            <div id="analyticsStats" class="mb-4">
-                <!-- Stats will be rendered here -->
+            <div class="row mb-4">
+                <div class="col-md-4">
+                    <div class="stats-card">
+                        <i class="bi bi-magic text-primary mb-3" style="font-size: 2rem;"></i>
+                        <div class="stats-number" id="totalGenerated">0</div>
+                        <div class="stats-label">Total Generated</div>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="stats-card">
+                        <i class="bi bi-bookmark text-success mb-3" style="font-size: 2rem;"></i>
+                        <div class="stats-number" id="savedCount">0</div>
+                        <div class="stats-label">Saved Content</div>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="stats-card">
+                        <i class="bi bi-calendar-event text-warning mb-3" style="font-size: 2rem;"></i>
+                        <div class="stats-number" id="scheduledCount">0</div>
+                        <div class="stats-label">Scheduled Posts</div>
+                    </div>
+                </div>
             </div>
 
-            <!-- Quick Actions -->
+            <!-- Quick Actions & Recent Activity -->
             <div class="row mb-4">
                 <div class="col-md-6">
                     <div class="card">
@@ -83,10 +103,10 @@
                             <h5 class="mb-0"><i class="bi bi-lightning me-2"></i>Quick Actions</h5>
                         </div>
                         <div class="card-body">
-                            <button class="btn btn-primary w-100 mb-2" onclick="navigateTo('generator')">
+                            <button class="btn btn-primary w-100 mb-3" onclick="navigateTo('generator')">
                                 <i class="bi bi-magic me-2"></i>Generate New Content
                             </button>
-                            <button class="btn btn-outline-primary w-100 mb-2" onclick="navigateTo('templates')">
+                            <button class="btn btn-outline-primary w-100 mb-3" onclick="navigateTo('templates')">
                                 <i class="bi bi-file-earmark-text me-2"></i>Browse Templates
                             </button>
                             <button class="btn btn-outline-success w-100" onclick="navigateTo('saved')">
@@ -101,11 +121,11 @@
                             <h5 class="mb-0"><i class="bi bi-clock me-2"></i>Recent Activity</h5>
                         </div>
                         <div class="card-body">
-                            <div class="d-flex align-items-center mb-2">
+                            <div class="d-flex align-items-center mb-3">
                                 <i class="bi bi-check-circle text-success me-2"></i>
                                 <span>Last generation: <span id="lastGenerated">-</span></span>
                             </div>
-                            <div class="d-flex align-items-center mb-2">
+                            <div class="d-flex align-items-center mb-3">
                                 <i class="bi bi-calendar-check text-primary me-2"></i>
                                 <span>Scheduled posts: <span id="scheduledCount">0</span></span>
                             </div>
@@ -125,7 +145,10 @@
                 </div>
                 <div class="card-body">
                     <div id="recentContent">
-                        <!-- Recent content will be rendered here -->
+                        <div class="text-center text-muted py-4">
+                            <i class="bi bi-inbox" style="font-size: 3rem; opacity: 0.5;"></i>
+                            <p class="mt-2">No recent content yet. Start generating to see your content here!</p>
+                        </div>
                     </div>
                 </div>
             </div>
