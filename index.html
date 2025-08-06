@@ -134,75 +134,75 @@
 
     <!-- Generator Section -->
     <div id="generator" class="page-section" style="display: none;">
-        <div class="header">
-            <div class="container">
-                <h1 class="text-center">Generator Konten AI Harian</h1>
-                <p class="text-center mb-0">Menghasilkan 3 thread tutorial AI unik setiap hari pukul 07.00 WIB</p>
+    <div class="header">
+        <div class="container">
+            <h1 class="text-center">Generator Konten AI Harian</h1>
+            <p class="text-center mb-0">Menghasilkan 3 thread tutorial AI unik setiap hari pukul 07.00 WIB</p>
+        </div>
+    </div>
+
+    <div class="container">
+        <div class="schedule-info">
+            <div class="d-flex align-items-center">
+                <i class="bi bi-clock-history me-2"></i>
+                <div>
+                    <strong>Jadwal Otomatis:</strong> Setiap hari pukul 07.00 WIB
+                    <div class="small">Konten terakhir dihasilkan: <span id="lastGenerated">-</span></div>
+                </div>
             </div>
         </div>
 
-        <div class="container">
-            <div class="schedule-info">
-                <div class="d-flex align-items-center">
-                    <i class="bi bi-clock-history me-2"></i>
-                    <div>
-                        <strong>Jadwal Otomatis:</strong> Setiap hari pukul 07.00 WIB
-                        <div class="small">Konten terakhir dihasilkan: <span id="lastGenerated">-</span></div>
+        <div class="api-section">
+            <h4 class="mb-3">Pengaturan API Gemini 2.5 Flash</h4>
+            <div class="row">
+                <div class="col-md-8">
+                    <div class="input-group mb-3">
+                        <span class="input-group-text">API Key</span>
+                        <input type="password" id="apiKey" class="form-control" placeholder="Masukkan API Key Gemini Anda">
+                        <button class="btn btn-primary" id="saveApiKey">Simpan</button>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="d-flex align-items-center">
+                        <span class="status-indicator" id="apiStatus"></span>
+                        <span id="apiStatusText">Status API: Tidak terhubung</span>
                     </div>
                 </div>
             </div>
-
-            <div class="api-section">
-                <h4 class="mb-3">Pengaturan API Gemini 2.5 Flash</h4>
-                <div class="row">
-                    <div class="col-md-8">
-                        <div class="input-group mb-3">
-                            <span class="input-group-text">API Key</span>
-                            <input type="password" id="apiKey" class="form-control" placeholder="Masukkan API Key Gemini Anda">
-                            <button class="btn btn-primary" id="saveApiKey">Simpan</button>
-                        </div>
-                    </div>
-                    <div class="col-md-4">
-                        <div class="d-flex align-items-center">
-                            <span class="status-indicator" id="apiStatus"></span>
-                            <span id="apiStatusText">Status API: Tidak terhubung</span>
-                        </div>
-                    </div>
-                </div>
-                <div class="form-text">
-                    Dapatkan API Key dari <a href="https://makersuite.google.com/app/apikey" target="_blank">Google AI Studio</a>
-                </div>
+            <div class="form-text">
+                Dapatkan API Key dari <a href="https://makersuite.google.com/app/apikey" target="_blank">Google AI Studio</a>
             </div>
+        </div>
 
-            <div class="generate-section">
-                <h4>Generate Konten AI Manual</h4>
-                <p class="text-muted">Pilih topik dan klik tombol di bawah untuk generate konten baru secara manual</p>
-                
-                <div class="topic-selector">
-                    <div class="topic-badge active" data-topic="umum">AI Umum</div>
-                    <div class="topic-badge" data-topic="chatgpt">ChatGPT</div>
-                    <div class="topic-badge" data-topic="gambar">AI Gambar</div>
-                    <div class="topic-badge" data-topic="video">AI Video</div>
-                    <div class="topic-badge" data-topic="bisnis">AI untuk Bisnis</div>
-                    <div class="topic-badge" data-topic="pendidikan">AI untuk Pendidikan</div>
+        <div class="generate-section">
+            <h4>Generate Konten AI Manual</h4>
+            <p class="text-muted">Pilih topik dan klik tombol di bawah untuk generate konten baru secara manual</p>
+            
+            <div class="topic-selector">
+                <div class="topic-badge active" data-topic="umum">AI Umum</div>
+                <div class="topic-badge" data-topic="chatgpt">ChatGPT</div>
+                <div class="topic-badge" data-topic="gambar">AI Gambar</div>
+                <div class="topic-badge" data-topic="video">AI Video</div>
+                <div class="topic-badge" data-topic="bisnis">AI untuk Bisnis</div>
+                <div class="topic-badge" data-topic="pendidikan">AI untuk Pendidikan</div>
+            </div>
+            
+            <button id="generateBtn" class="btn btn-primary btn-lg">
+                <i class="bi bi-magic me-2"></i>Generate Konten Sekarang
+            </button>
+            <div class="loading-spinner" id="loadingSpinner">
+                <div class="spinner-border text-primary" role="status">
+                    <span class="visually-hidden">Loading...</span>
                 </div>
-                
-                <button id="generateBtn" class="btn btn-primary btn-lg">
-                    <i class="bi bi-magic me-2"></i>Generate Konten Sekarang
-                </button>
-                <div class="loading-spinner" id="loadingSpinner">
-                    <div class="spinner-border text-primary" role="status">
-                        <span class="visually-hidden">Loading...</span>
-                    </div>
                     <p class="mt-2">Sedang menghasilkan konten<span class="loading-dots"></span></p>
                 </div>
-            </div>
+        </div>
 
-            <div class="row">
-                <div class="col-md-12">
-                    <h3 class="mb-4">Konten AI Hari Ini</h3>
-                    <div id="threadsContainer" class="thread-container">
-                        <!-- Thread akan dimuat di sini -->
+        <div class="row">
+            <div class="col-md-12">
+                <h3 class="mb-4">Konten AI Hari Ini</h3>
+                <div id="threadsContainer" class="thread-container">
+                    <!-- Thread akan dimuat di sini -->
                     </div>
                 </div>
             </div>
