@@ -32,7 +32,6 @@
       ]
     }
   ],
-  "functions": {},
   "env": {},
   "build": {
     "env": {
