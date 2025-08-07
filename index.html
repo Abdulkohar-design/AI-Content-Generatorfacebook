@@ -1156,91 +1156,119 @@
             // --- Image Prompt Generation ---
             function buildImagePromptFromContent(content, topic, keywords, format = 'thread') {
                 let mainTextForImage = '';
-                let visualThemeModifier = ''; // Untuk memodifikasi tema visual dasar
-                let specificTextOverlay = ''; // Untuk teks yang muncul di gambar, jika ada
+                let visualThemeModifier = '';
+                let specificTextOverlay = ''; // For text hardcoded for a specific topic (e.g., 'PEMBELAJARAN JARAK JAUH')
 
-                // 1. Dapatkan inti teks yang lebih ringkas
+                // 1. Get a concise and representative core text
+                // Prioritize the hook/title/first sentence as they are designed to summarize
                 if (format === 'thread') {
-                    const keywordsInHook = [
-                        "produktivitas", "kerja", "bisnis", "freelance", "efektif", "hemat waktu",
-                        "belajar", "pendidikan", "tutorial", "skill", "teknologi", "AI", "ChatGPT", "gambar", "video",
-                        "tips", "cara", "panduan", "strategi", "optimasi", "pemula"
-                    ];
+                    // Start with the full hook, then refine it
+                    mainTextForImage = content.trim(); 
                     
-                    let foundKeywordPhrase = '';
-                    // Mencari frasa yang lebih relevan
-                    if (content.toLowerCase().includes('mengoptimalkan produktivitas')) foundKeywordPhrase = 'Optimalisasi Produktivitas';
-                    else if (content.toLowerCase().includes('pemanfaatan video')) foundKeywordPhrase = 'Pemanfaatan Video Profesional';
-                    else if (content.toLowerCase().includes('tingkatkan potensi ai')) foundKeywordPhrase = 'Tingkatkan Potensi AI';
-                    else if (content.toLowerCase().includes('rahasia ai gambar')) foundKeywordPhrase = 'Rahasia AI Gambar';
-                    else if (content.toLowerCase().includes('manfaatkan chatgpt')) foundKeywordPhrase = 'Manfaatkan ChatGPT';
-                    else if (content.toLowerCase().includes('teknologi terbaru')) foundKeywordPhrase = 'Teknologi Terbaru';
-                    else if (content.toLowerCase().includes('ai dalam kehidupan')) foundKeywordPhrase = 'AI dalam Kehidupan';
-                    else {
-                        // Fallback: cari keyword tunggal atau ambil beberapa kata pertama
-                        let foundKeyword = keywordsInHook.find(kw => content.toLowerCase().includes(kw));
-                        if (foundKeyword) {
-                            foundKeywordPhrase = `${foundKeyword.charAt(0).toUpperCase() + foundKeyword.slice(1)} ${topic}`;
+                    // Specific phrases for better image text
+                    if (mainTextForImage.toLowerCase().includes('mengoptimalkan produktivitas di tempat kerja')) {
+                        mainTextForImage = 'Optimalisasi Produktivitas Kerja';
+                    } else if (mainTextForImage.toLowerCase().includes('pemanfaatan video yang efektif')) {
+                        mainTextForImage = 'Video Komunikasi Profesional';
+                    } else if (mainTextForImage.toLowerCase().includes('rahasia ai gambar')) {
+                        mainTextForImage = 'Rahasia AI Gambar';
+                    } else if (mainTextForImage.toLowerCase().includes('manfaatkan chatgpt')) {
+                        mainTextForImage = 'Manfaatkan ChatGPT';
+                    } else if (mainTextForImage.toLowerCase().includes('tingkatkan potensi ai')) {
+                        mainTextForImage = 'Tingkatkan Potensi AI';
+                    } else {
+                        // Fallback: If no specific phrase, try to get the first sentence or a few words
+                        let firstSentenceMatch = mainTextForImage.match(/^([^.!?]+[.!?])/);
+                        if (firstSentenceMatch) {
+                            mainTextForImage = firstSentenceMatch[1].trim();
                         } else {
-                            foundKeywordPhrase = content.split(' ').slice(0, 5).join(' ').trim();
-                            if (foundKeywordPhrase.endsWith('...')) foundKeywordPhrase = foundKeywordPhrase.slice(0, -3);
+                            mainTextForImage = mainTextForImage.split(' ').slice(0, 7).join(' ').trim(); // Take up to 7 words
                         }
                     }
 
-                    mainTextForImage = foundKeywordPhrase;
-                    mainTextForImage = mainTextForImage.replace(/[.,\/#!$%\^&\*;:{}=\-_`~()]/g,"").replace(/\s{2,}/g," ").trim();
+                    // Ensure text is clean and doesn't contain bullet points if it accidentally got one
+                    mainTextForImage = mainTextForImage.replace(/^•\s*/, '').replace(/[.,\/#!$%\^&\*;:{}=\-_`~()]/g,"").replace(/\s{2,}/g," ").trim();
+                    
+                    // Max length for image text for thread hook (can be slightly longer)
+                    const maxImageTextLength = 60; 
+                    if (mainTextForImage.length > maxImageTextLength) {
+                        let tempText = mainTextForImage.substring(0, maxImageTextLength);
+                        let lastSpaceIndex = tempText.lastIndexOf(' ');
+                        if (lastSpaceIndex !== -1 && lastSpaceIndex > maxImageTextLength / 2) {
+                            mainTextForImage = tempText.substring(0, lastSpaceIndex);
+                        } else {
+                            mainTextForImage = tempText;
+                        }
+                        mainTextForImage += '...';
+                    }
                     visualThemeModifier = `Menggambarkan ide inti dari konten tentang ${topic} dengan fokus pada "${mainTextForImage}".`;
 
                 } else if (format === 'blog-outline') {
                     const titleMatch = content.match(/^Judul Blog Post:\s*([^\n]+)/);
                     mainTextForImage = titleMatch ? titleMatch[1].trim() : (content.split('\n')[0] || '').replace('Judul Blog Post:', '').trim();
-                    if (mainTextForImage.length > 30) {
-                        mainTextForImage = mainTextForImage.split(' ').slice(0, 4).join(' ').trim();
+                    
+                    const maxImageTextLength = 70; // A bit longer for blog titles
+                    if (mainTextForImage.length > maxImageTextLength) {
+                        let tempText = mainTextForImage.substring(0, maxImageTextLength);
+                        let lastSpaceIndex = tempText.lastIndexOf(' ');
+                        if (lastSpaceIndex !== -1 && lastSpaceIndex > maxImageTextLength / 2) {
+                            mainTextForImage = tempText.substring(0, lastSpaceIndex);
+                        } else {
+                            mainTextForImage = tempText;
+                        }
+                        mainTextForImage += '...';
                     }
                     mainTextForImage = mainTextForImage.replace(/[.,\/#!$%\^&\*;:{}=\-_`~()]/g,"").replace(/\s{2,}/g," ").trim();
                     visualThemeModifier = `Menyampaikan konsep utama dari outline berjudul: "${mainTextForImage}".`;
 
                 } else if (format === 'caption') {
-                    mainTextForImage = content.split('. ')[0].trim();
-                    if (mainTextForImage.length > 25) {
-                        mainTextForImage = mainTextForImage.split(' ').slice(0, 3).join(' ').trim();
+                    mainTextForImage = content.split('. ')[0].replace(/^•\s*/, '').trim(); 
+                    
+                    const maxImageTextLength = 45; // Shortest for captions
+                    if (mainTextForImage.length > maxImageTextLength) {
+                        let tempText = mainTextForImage.substring(0, maxImageTextLength);
+                        let lastSpaceIndex = tempText.lastIndexOf(' ');
+                        if (lastSpaceIndex !== -1 && lastSpaceIndex > maxImageTextLength / 2) {
+                            mainTextForImage = tempText.substring(0, lastSpaceIndex);
+                        } else {
+                            mainTextForImage = tempText;
+                        }
+                        mainTextForImage += '...';
                     }
                     mainTextForImage = mainTextForImage.replace(/[.,\/#!$%\^&\*;:{}=\-_`~()]/g,"").replace(/\s{2,}/g," ").trim();
                     visualThemeModifier = `Mengilustrasikan pesan kunci dari caption: "${mainTextForImage}".`;
                 }
 
-                // 2. Tentukan gaya visual dasar yang lebih netral atau sesuai topik
+                // 2. Define base visual style, dynamic based on topic
                 let baseVisualDescription = `A digital illustration with glowing interconnected lines and abstract data streams. The scene features diverse people (adults, young adults, children if relevant to topic) actively engaged with technology.`;
 
-                // Kita bisa tambahkan modifikasi visual spesifik berdasarkan topik
                 switch (topic) {
                     case 'pendidikan':
                         baseVisualDescription = `A vibrant, futuristic, and digital illustration. The scene features diverse people (adults and children) actively engaged with glowing laptops, tablets, and smartphones, surrounded by interconnected blue and pink digital lines, circuit patterns, and abstract data streams, symbolizing technology and connectivity in education.`;
-                        specificTextOverlay = `'PEMBELAJARAN JARAK JAUH'`; // Teks ini hanya untuk topik pendidikan
+                        specificTextOverlay = `'PEMBELAJARAN JARAK JAUH'`; // This text only for education topic
                         break;
                     case 'bisnis':
-                        baseVisualDescription = `A sleek, modern digital illustration. Professionals collaborating around a holographic interface, charts, and data visualizations, with abstract business growth elements and network connections.`;
+                        baseVisualDescription = `A sleek, modern digital illustration. Professionals collaborating around a holographic interface, charts, and data visualizations, with abstract business growth elements and network connections. The atmosphere is professional and innovative.`;
                         break;
                     case 'chatgpt':
-                        baseVisualDescription = `A clean, minimalist digital illustration. People interacting with AI chatbots on screens, represented by glowing text bubbles and abstract thought processes, in a futuristic or smart environment.`;
+                        baseVisualDescription = `A clean, minimalist digital illustration. People interacting with AI chatbots on screens, represented by glowing text bubbles and abstract thought processes, in a futuristic or smart environment. Focus on clear interface and communication.`;
                         break;
                     case 'gambar':
-                        baseVisualDescription = `An imaginative digital illustration. People creating art or designs on tablets/laptops, surrounded by flowing digital brushstrokes, evolving shapes, and abstract artistic elements, reflecting AI's role in creative processes.`;
+                        baseVisualDescription = `An imaginative digital illustration. People creating art or designs on tablets/laptops, surrounded by flowing digital brushstrokes, evolving shapes, and abstract artistic elements, reflecting AI's role in creative processes. The mood is creative and inspiring.`;
                         break;
                     case 'video':
-                        baseVisualDescription = `A dynamic digital illustration. People producing, editing, or watching videos on various devices, with glowing video frames, playback controls, and abstract soundwave or visual effect elements.`;
+                        baseVisualDescription = `A dynamic digital illustration. People producing, editing, or watching videos on various devices, with glowing video frames, playback controls, and abstract soundwave or visual effect elements. The scene conveys movement and digital media.`;
                         break;
                     case 'teknologi':
-                        baseVisualDescription = `A futuristic digital landscape. People interacting with advanced gadgets, smart devices, and holographic displays, surrounded by complex circuit boards, neural networks, and evolving technological concepts.`;
+                        baseVisualDescription = `A futuristic digital landscape. People interacting with advanced gadgets, smart devices, and holographic displays, surrounded by complex circuit boards, neural networks, and evolving technological concepts. The mood is cutting-edge and transformative.`;
                         break;
                     case 'kehidupan':
-                        baseVisualDescription = `A warm, inviting digital illustration. People using AI in daily life, e.g., smart home, personal assistant, health tracking, seamlessly integrated into a comfortable, modern living space.`;
+                        baseVisualDescription = `A warm, inviting digital illustration. People using AI in daily life, e.g., smart home, personal assistant, health tracking, seamlessly integrated into a comfortable, modern living space. The atmosphere is convenient and comforting.`;
                         break;
                     default: // umum
-                        baseVisualDescription = `A dynamic digital illustration. People interacting with various forms of AI and technology in everyday scenarios, surrounded by abstract data flows and interconnected digital elements.`;
+                        baseVisualDescription = `A dynamic digital illustration. People interacting with various forms of AI and technology in everyday scenarios, surrounded by abstract data flows and interconnected digital elements. The overall feel is about modern living with technology.`;
                         break;
                 }
-
 
                 let styleDescription = '';
                 switch(toneStyleSelect.value) {
@@ -1251,14 +1279,14 @@
                     default: styleDescription = 'a clear, modern, and informative graphic design style'; break;
                 }
                 
-                // Gabungkan teks spesifik dari konten ke prompt gambar
+                // Combine text for image overlay
                 let textOverlayPrompt = "";
-                if (specificTextOverlay) { // Jika ada teks overlay khusus untuk topik tertentu (e.g., Pendidikan)
+                if (specificTextOverlay) {
                     textOverlayPrompt = `Include the exact text ${specificTextOverlay} prominently displayed in the image, integrated subtly into the digital elements or as a holographic projection.`;
                 } else if (mainTextForImage) {
-                    textOverlayPrompt = `Subtly integrate the text '${mainTextForImage.toUpperCase()}' within the digital interface or as an abstract overlay.`;
+                    // Use UPPERCASE and 'bold' to instruct AI to render clearly
+                    textOverlayPrompt = `Subtly integrate the bold text '${mainTextForImage.toUpperCase()}' within the digital interface or as an abstract holographic overlay.`;
                 }
-
 
                 // Final Prompt
                 return `${baseVisualDescription} ${visualThemeModifier} ${textOverlayPrompt} Overall mood: innovative, educational, and accessible. Style: ${styleDescription}. --ar 16:9 --v 5.2 --q 2`;
@@ -1318,39 +1346,39 @@
                     const allSampleThreads = {
                         'chatgpt': [
                             {
-                                hook: "Punya bisnis kecil atau kerja freelance? Gunakan ChatGPT buat bantu kerja lebih cepat dan hemat waktu.",
+                                hook: "Lebih dari sekadar menjawab pertanyaan: ChatGPT sebagai asisten pribadi.",
                                 prompts: [
-                                    "• Buat template penawaran harga untuk jasa desain grafis",
-                                    "• Tulis ulang deskripsi produk ini agar lebih menjual dan jelas",
-                                    "• Buat daftar pertanyaan wawancara awal untuk klien baru",
-                                    "• Susun email follow-up profesional untuk prospek yang belum merespons",
-                                    "• Rancang 3 opsi bio Instagram bisnis yang singkat dan efektif",
-                                    "• Buat ringkasan pitch produk 60 detik untuk presentasi lisan",
-                                    "• Ubah testimoni pelanggan ini jadi konten testimonial bergaya narasi"
+                                    "• Optimalkan prompt Anda untuk hasil yang lebih presisi.",
+                                    "• Manfaatkan fitur 'custom instructions' untuk gaya respons konsisten.",
+                                    "• Gunakan ChatGPT untuk brainstorming ide dan konten.",
+                                    "• Buat draf email atau laporan profesional dalam hitungan detik.",
+                                    "• Simulasikan percakapan untuk latihan presentasi atau wawancara.",
+                                    "• Terjemahkan teks antar bahasa dengan cepat dan akurat.",
+                                    "• Ringkas dokumen panjang menjadi poin-poin kunci yang mudah dipahami."
                                 ]
                             },
                             {
-                                hook: "Ingin meningkatkan produktivitas kerja? ChatGPT bisa jadi asisten pribadi Anda untuk berbagai tugas.",
+                                hook: "Cara ChatGPT membantu bisnis kecil berkembang pesat dan hemat biaya.",
                                 prompts: [
-                                    "• Buat ringkasan meeting dari catatan ini dalam poin-poin penting",
-                                    "• Susun agenda meeting untuk tim produktif dengan durasi 30 menit",
-                                    "• Tulis draft email untuk meminta perpanjangan deadline proyek",
-                                    "• Buat prioritas tugas harian berdasarkan daftar pekerjaan ini",
-                                    "• Rancang template laporan progress mingguan yang singkat dan jelas",
-                                    "• Tulis 3 opsi balasan untuk email keluhan pelanggan",
-                                    "• Buat daftar pertanyaan untuk evaluasi performa karyawan"
+                                    "• Otomatiskan layanan pelanggan dengan chatbot berbasis ChatGPT.",
+                                    "• Hasilkan ide kampanye pemasaran yang menarik dan orisinal.",
+                                    "• Tulis deskripsi produk yang menjual dan menarik perhatian.",
+                                    "• Analisis tren pasar dan kompetitor secara efisien.",
+                                    "• Buat konten media sosial yang konsisten dan relevan.",
+                                    "• Susun rencana bisnis dan proposal proyek dengan cepat.",
+                                    "• Lakukan riset pasar awal tanpa biaya besar."
                                 ]
                             },
                             {
-                                hook: "Jelajahi fitur lanjutan ChatGPT untuk memaksimalkan potensi AI Anda.",
+                                hook: "Kerja ChatGPT untuk kreator konten: Tingkatkan kualitas dan kecepatan produksi.",
                                 prompts: [
-                                    "• Manfaatkan 'Custom Instructions' untuk personalisasi respons AI.",
-                                    "• Gunakan fitur 'Code Interpreter' untuk analisis data dan visualisasi.",
-                                    "• Pelajari cara membuat 'Prompts' yang efektif untuk hasil optimal.",
-                                    "• Integrasikan ChatGPT dengan alat lain melalui API.",
-                                    "• Pahami batasan dan etika penggunaan AI untuk hasil yang bertanggung jawab.",
-                                    "• Ikuti update terbaru fitur ChatGPT agar tidak ketinggalan.",
-                                    "• Gabungkan ChatGPT dengan strategi SEO untuk konten yang powerful."
+                                    "• Hasilkan ide-ide unik untuk video atau blog post.",
+                                    "• Buat outline konten yang terstruktur dan mudah diikuti.",
+                                    "• Tulis skrip podcast atau narasi video yang engaging.",
+                                    "• Kembangkan karakter atau alur cerita fiksi.",
+                                    "• Optimalkan judul dan deskripsi untuk SEO.",
+                                    "• Buat caption media sosial yang memikat audiens.",
+                                    "• Dapatkan feedback instan tentang draf tulisan Anda."
                                 ]
                             }
                         ],
@@ -1429,7 +1457,7 @@
                                 ]
                             }
                         ],
-                        // ... Tambahkan sample lainnya untuk topik 'bisnis', 'pendidikan', 'teknologi', 'kehidupan'
+                        // ... Tambahkan lebih banyak sample untuk topik 'bisnis', 'pendidikan', 'teknologi', 'kehidupan'
                     };
                     
                     const availableSamples = allSampleThreads[topic] || allSampleThreads['umum'];
@@ -1438,6 +1466,7 @@
                     threads.forEach((thread, index) => {
                         const threadElement = createThread(thread, index, false, ctaUsed);
                         threadsContainer.appendChild(threadElement);
+                        // Use the revised buildImagePromptFromContent for samples too
                         sampleImagePrompts.push(buildImagePromptFromContent(thread.hook, topic, specificKeywordsInput.value.trim(), 'thread'));
                     });
                     if (threads.length > 0) {
