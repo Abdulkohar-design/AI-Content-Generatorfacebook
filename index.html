@@ -1156,24 +1156,91 @@
             // --- Image Prompt Generation ---
             function buildImagePromptFromContent(content, topic, keywords, format = 'thread') {
                 let mainTextForImage = '';
-                let dynamicVisualConcept = '';
+                let visualThemeModifier = ''; // Untuk memodifikasi tema visual dasar
+                let specificTextOverlay = ''; // Untuk teks yang muncul di gambar, jika ada
 
+                // 1. Dapatkan inti teks yang lebih ringkas
                 if (format === 'thread') {
-                    // Untuk thread, ambil inti dari hook atau kalimat pertama
-                    mainTextForImage = content.split('.')[0].trim();
-                    dynamicVisualConcept = `Mencerminkan esensi dari hook: "${mainTextForImage}".`;
+                    const keywordsInHook = [
+                        "produktivitas", "kerja", "bisnis", "freelance", "efektif", "hemat waktu",
+                        "belajar", "pendidikan", "tutorial", "skill", "teknologi", "AI", "ChatGPT", "gambar", "video",
+                        "tips", "cara", "panduan", "strategi", "optimasi", "pemula"
+                    ];
+                    
+                    let foundKeywordPhrase = '';
+                    // Mencari frasa yang lebih relevan
+                    if (content.toLowerCase().includes('mengoptimalkan produktivitas')) foundKeywordPhrase = 'Optimalisasi Produktivitas';
+                    else if (content.toLowerCase().includes('pemanfaatan video')) foundKeywordPhrase = 'Pemanfaatan Video Profesional';
+                    else if (content.toLowerCase().includes('tingkatkan potensi ai')) foundKeywordPhrase = 'Tingkatkan Potensi AI';
+                    else if (content.toLowerCase().includes('rahasia ai gambar')) foundKeywordPhrase = 'Rahasia AI Gambar';
+                    else if (content.toLowerCase().includes('manfaatkan chatgpt')) foundKeywordPhrase = 'Manfaatkan ChatGPT';
+                    else if (content.toLowerCase().includes('teknologi terbaru')) foundKeywordPhrase = 'Teknologi Terbaru';
+                    else if (content.toLowerCase().includes('ai dalam kehidupan')) foundKeywordPhrase = 'AI dalam Kehidupan';
+                    else {
+                        // Fallback: cari keyword tunggal atau ambil beberapa kata pertama
+                        let foundKeyword = keywordsInHook.find(kw => content.toLowerCase().includes(kw));
+                        if (foundKeyword) {
+                            foundKeywordPhrase = `${foundKeyword.charAt(0).toUpperCase() + foundKeyword.slice(1)} ${topic}`;
+                        } else {
+                            foundKeywordPhrase = content.split(' ').slice(0, 5).join(' ').trim();
+                            if (foundKeywordPhrase.endsWith('...')) foundKeywordPhrase = foundKeywordPhrase.slice(0, -3);
+                        }
+                    }
+
+                    mainTextForImage = foundKeywordPhrase;
+                    mainTextForImage = mainTextForImage.replace(/[.,\/#!$%\^&\*;:{}=\-_`~()]/g,"").replace(/\s{2,}/g," ").trim();
+                    visualThemeModifier = `Menggambarkan ide inti dari konten tentang ${topic} dengan fokus pada "${mainTextForImage}".`;
+
                 } else if (format === 'blog-outline') {
-                    // Untuk blog outline, ekstrak judul atau bagian awal outline
                     const titleMatch = content.match(/^Judul Blog Post:\s*([^\n]+)/);
                     mainTextForImage = titleMatch ? titleMatch[1].trim() : (content.split('\n')[0] || '').replace('Judul Blog Post:', '').trim();
-                    dynamicVisualConcept = `Menggambarkan tema utama dari outline berjudul: "${mainTextForImage}".`;
+                    if (mainTextForImage.length > 30) {
+                        mainTextForImage = mainTextForImage.split(' ').slice(0, 4).join(' ').trim();
+                    }
+                    mainTextForImage = mainTextForImage.replace(/[.,\/#!$%\^&\*;:{}=\-_`~()]/g,"").replace(/\s{2,}/g," ").trim();
+                    visualThemeModifier = `Menyampaikan konsep utama dari outline berjudul: "${mainTextForImage}".`;
+
                 } else if (format === 'caption') {
-                    // Untuk caption, gunakan bagian awal caption
                     mainTextForImage = content.split('. ')[0].trim();
-                    dynamicVisualConcept = `Merepresentasikan ide inti dari caption: "${mainTextForImage}".`;
+                    if (mainTextForImage.length > 25) {
+                        mainTextForImage = mainTextForImage.split(' ').slice(0, 3).join(' ').trim();
+                    }
+                    mainTextForImage = mainTextForImage.replace(/[.,\/#!$%\^&\*;:{}=\-_`~()]/g,"").replace(/\s{2,}/g," ").trim();
+                    visualThemeModifier = `Mengilustrasikan pesan kunci dari caption: "${mainTextForImage}".`;
                 }
 
-                if (mainTextForImage.length > 70) mainTextForImage = mainTextForImage.substring(0, 70) + '...'; // Potong teks panjang untuk prompt singkat
+                // 2. Tentukan gaya visual dasar yang lebih netral atau sesuai topik
+                let baseVisualDescription = `A digital illustration with glowing interconnected lines and abstract data streams. The scene features diverse people (adults, young adults, children if relevant to topic) actively engaged with technology.`;
+
+                // Kita bisa tambahkan modifikasi visual spesifik berdasarkan topik
+                switch (topic) {
+                    case 'pendidikan':
+                        baseVisualDescription = `A vibrant, futuristic, and digital illustration. The scene features diverse people (adults and children) actively engaged with glowing laptops, tablets, and smartphones, surrounded by interconnected blue and pink digital lines, circuit patterns, and abstract data streams, symbolizing technology and connectivity in education.`;
+                        specificTextOverlay = `'PEMBELAJARAN JARAK JAUH'`; // Teks ini hanya untuk topik pendidikan
+                        break;
+                    case 'bisnis':
+                        baseVisualDescription = `A sleek, modern digital illustration. Professionals collaborating around a holographic interface, charts, and data visualizations, with abstract business growth elements and network connections.`;
+                        break;
+                    case 'chatgpt':
+                        baseVisualDescription = `A clean, minimalist digital illustration. People interacting with AI chatbots on screens, represented by glowing text bubbles and abstract thought processes, in a futuristic or smart environment.`;
+                        break;
+                    case 'gambar':
+                        baseVisualDescription = `An imaginative digital illustration. People creating art or designs on tablets/laptops, surrounded by flowing digital brushstrokes, evolving shapes, and abstract artistic elements, reflecting AI's role in creative processes.`;
+                        break;
+                    case 'video':
+                        baseVisualDescription = `A dynamic digital illustration. People producing, editing, or watching videos on various devices, with glowing video frames, playback controls, and abstract soundwave or visual effect elements.`;
+                        break;
+                    case 'teknologi':
+                        baseVisualDescription = `A futuristic digital landscape. People interacting with advanced gadgets, smart devices, and holographic displays, surrounded by complex circuit boards, neural networks, and evolving technological concepts.`;
+                        break;
+                    case 'kehidupan':
+                        baseVisualDescription = `A warm, inviting digital illustration. People using AI in daily life, e.g., smart home, personal assistant, health tracking, seamlessly integrated into a comfortable, modern living space.`;
+                        break;
+                    default: // umum
+                        baseVisualDescription = `A dynamic digital illustration. People interacting with various forms of AI and technology in everyday scenarios, surrounded by abstract data flows and interconnected digital elements.`;
+                        break;
+                }
+
 
                 let styleDescription = '';
                 switch(toneStyleSelect.value) {
@@ -1183,18 +1250,18 @@
                     case 'profesional': styleDescription = 'a sleek, modern, and professional corporate style'; break;
                     default: styleDescription = 'a clear, modern, and informative graphic design style'; break;
                 }
-
-                // Deskripsi visual dasar yang konsisten dengan contoh gambar
-                const baseVisual = `A vibrant, futuristic, and digital illustration. The scene features diverse people (adults and children) actively engaged with glowing laptops, tablets, and smartphones, surrounded by interconnected blue and pink digital lines, circuit patterns, and abstract data streams, symbolizing technology and connectivity in education.`;
-
-                // Instruksi untuk overlay teks tetap
-                const textOverlayInstruction = `Include the exact text 'PEMBELAJARAN JARAK JAUH' prominently displayed in the image, integrated subtly into the digital elements or as a holographic projection.`;
-
-                // Integrasi konten dinamis yang relevan dengan topik dan keyword
-                // Menggunakan mainTextForImage untuk konteks yang lebih spesifik dalam prompt gambar
-                const dynamicContentIntegration = `Visually interpret the core theme related to ${topic}${keywords ? ` and ${keywords}` : ''}, specifically emphasizing "${mainTextForImage}".`;
                 
-                return `${baseVisual} ${dynamicContentIntegration} ${textOverlayInstruction} Overall mood: innovative, educational, and accessible. Style: ${styleDescription}. --ar 16:9 --v 5.2 --q 2`;
+                // Gabungkan teks spesifik dari konten ke prompt gambar
+                let textOverlayPrompt = "";
+                if (specificTextOverlay) { // Jika ada teks overlay khusus untuk topik tertentu (e.g., Pendidikan)
+                    textOverlayPrompt = `Include the exact text ${specificTextOverlay} prominently displayed in the image, integrated subtly into the digital elements or as a holographic projection.`;
+                } else if (mainTextForImage) {
+                    textOverlayPrompt = `Subtly integrate the text '${mainTextForImage.toUpperCase()}' within the digital interface or as an abstract overlay.`;
+                }
+
+
+                // Final Prompt
+                return `${baseVisualDescription} ${visualThemeModifier} ${textOverlayPrompt} Overall mood: innovative, educational, and accessible. Style: ${styleDescription}. --ar 16:9 --v 5.2 --q 2`;
             }
 
 
@@ -1321,8 +1388,48 @@
                                     "• Pahami kebijakan privasi layanan online yang Anda gunakan."
                                 ]
                             }
-                        ]
-                        // Tambahkan lebih banyak sample untuk topik lain jika perlu
+                        ],
+                        'video': [
+                            {
+                                hook: "Pemanfaatan video yang efektif kini menjadi tulang punggung strategi komunikasi profesional. Kuasai produksinya untuk dampak maksimal.",
+                                prompts: [
+                                    "• Rencanakan naskah dengan jelas dan tentukan tujuan video Anda.",
+                                    "• Perhatikan kualitas audio dan visual agar video terlihat profesional.",
+                                    "• Gunakan pencahayaan yang memadai dan latar belakang yang rapi.",
+                                    "• Edit video dengan transisi yang halus dan musik latar yang sesuai.",
+                                    "• Optimalkan durasi video agar tetap menarik dan tidak membosankan.",
+                                    "• Sertakan ajakan bertindak (CTA) yang jelas di akhir video.",
+                                    "• Promosikan video Anda di berbagai platform untuk jangkauan luas."
+                                ]
+                            },
+                            {
+                                hook: "AI mengubah cara kita membuat dan mengedit video. Otomatiskan prosesnya untuk efisiensi luar biasa!",
+                                prompts: [
+                                    "• Manfaatkan AI untuk menghasilkan naskah video secara otomatis.",
+                                    "• Gunakan tool AI untuk memotong klip dan menyusun timeline.",
+                                    "• AI dapat membantu menambahkan subtitle dan terjemahan instan.",
+                                    "• Jelajahi fitur AI untuk koreksi warna dan peningkatan kualitas gambar.",
+                                    "• Otomatiskan pemilihan musik latar yang sesuai dengan suasana video.",
+                                    "• Pelajari cara AI mengenali objek dan wajah untuk efek otomatis.",
+                                    "• Gunakan AI untuk membuat highlight reel dari rekaman panjang."
+                                ]
+                            }
+                        ],
+                        'gambar': [
+                            {
+                                hook: "Rahasia AI Gambar: Ciptakan visual menakjubkan dengan prompt yang tepat dan teknik optimasi.",
+                                prompts: [
+                                    "• Mulai dengan deskripsi objek atau subjek utama secara jelas.",
+                                    "• Tentukan gaya seni yang Anda inginkan (misal: 'futuristic', 'watercolor', 'oil painting').",
+                                    "• Tambahkan detail pencahayaan dan suasana (misal: 'golden hour', 'neon city night').",
+                                    "• Gunakan referensi seniman atau gaya visual tertentu (misal: 'in the style of Van Gogh').",
+                                    "• Eksplorasi modifier untuk kualitas gambar (misal: '--ar 16:9', '--v 5.2', '--q 2').",
+                                    "• Coba variasi prompt dengan kata kunci yang berbeda untuk hasil unik.",
+                                    "• Jangan ragu untuk bereksperimen dengan prompt negatif (apa yang tidak diinginkan)."
+                                ]
+                            }
+                        ],
+                        // ... Tambahkan sample lainnya untuk topik 'bisnis', 'pendidikan', 'teknologi', 'kehidupan'
                     };
                     
                     const availableSamples = allSampleThreads[topic] || allSampleThreads['umum'];
@@ -1342,7 +1449,7 @@
                     // Sample outlines - will only show one, but can be expanded
                     const sampleOutlines = [
                         `Judul Blog Post: ${topic} dan Masa Depan Kita\n\nI. Pendahuluan\n   A. Apa itu ${topic} dan mengapa penting?\n   B. Gambaran singkat evolusi ${topic}\nII. Aplikasi ${topic} dalam Kehidupan Sehari-hari\n   A. Contoh di smartphone Anda\n   B. Di industri dan bisnis\nIII. Tantangan dan Etika ${topic}\n   A. Isu privasi data\n   B. Potensi bias AI\nIV. Masa Depan ${topic} dan Rekomendasi\n   A. Prediksi perkembangan ke depan\n   B. Cara beradaptasi dengan ${topic}\nV. Kesimpulan\n   A. Ringkasan poin kunci\n   B. Ajakan untuk eksplorasi lebih lanjut`,
-                        `Judul Blog Post: Panduan Lengkap Memulai dengan ${topic}\n\nI. Pendahuluan: Mengapa ${topic}?\n   A. Pengertian dasar dan manfaatnya.\n   B. Target audiens dan tujuan blog.\nII. Langkah Awal Mempelajari ${topic}\n   A. Sumber belajar terbaik (kursus, buku, tutorial).\n   B. Konsep dasar yang harus dipahami.\nIII. Proyek Praktis Sederhana dengan ${topic}\n   A. Ide proyek untuk pemula.\n   B. Alat dan sumber daya yang dibutuhkan.\nIV. Menghindari Jebakan Umum dalam ${topic}\n   A. Kesalahan yang sering dilakukan pemula.\n   B. Tips mengatasi tantangan.\nV. Kesimpulan\n   A. Recap poin penting.\n   B. Langkah selanjutnya untuk pendalaman.`
+                        `Judul Blog Post: Panduan Lengkap Memulai dengan ${topic}\n\nI. Pendahuluan: Mengapa ${topic}?\n   A. Pengertian dasar dan manfaatnya.\n   B. Target audiens dan tujuan blog.\nII. Langkah Awal Mempelajari ${topic}\n   A. Sumber belajar terbaik (kursus, buku, tutorial).\n   B. Konsep dasar yang harus dipahami.\nIII. Proyek Praktis Sederhana dengan ${topic}\n   A. Ide proyek untuk pemula.\n   B. Alat dan sumber daya yang dibutuhkan.\nIV. Menghindari Jebakan Umum dalam ${topic}\n   A. Kesalahan yang sering dilakukan pemula.\n   B. Tips mengatasi tantangan.\nV. Kesimpulan\n   A. Ringkasan poin penting.\n   B. Langkah selanjutnya untuk pendalaman.`
                     ];
 
                     const outlinesToDisplay = sampleOutlines.slice(0, numContents);
