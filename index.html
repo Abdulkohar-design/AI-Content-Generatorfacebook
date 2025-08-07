@@ -300,9 +300,9 @@
 
             <div class="row mb-3">
                 <div class="col-md-6 mb-3 mb-md-0">
-                    <label for="numTips" class="form-label fw-bold">Jumlah Poin/Tips per Thread:</label>
-                    <input type="number" id="numTips" class="form-control" value="7" min="3" max="15">
-                    <div class="form-text">Antara 3 sampai 15 poin per thread.</div>
+                    <label for="numThreads" class="form-label fw-bold">Jumlah Konten yang Dihasilkan:</label>
+                    <input type="number" id="numThreads" class="form-control" value="3" min="1" max="5">
+                    <div class="form-text">Antara 1 sampai 5 konten (thread/outline/caption).</div>
                 </div>
                 <div class="col-md-6">
                     <label for="targetAudience" class="form-label fw-bold">Target Audiens:</label>
@@ -466,7 +466,7 @@
             const outputFormatBadges = document.querySelectorAll('.output-format-badge');
             const specificKeywordsInput = document.getElementById('specificKeywords');
             const toneStyleSelect = document.getElementById('toneStyle');
-            const numTipsInput = document.getElementById('numTips');
+            const numThreadsInput = document.getElementById('numThreads'); // Updated ID
             const targetAudienceSelect = document.getElementById('targetAudience');
             const newCtaTextarea = document.getElementById('newCtaText');
             const addCtaBtn = document.getElementById('addCtaBtn');
@@ -487,6 +487,8 @@
             loadGeneratedHistory();
             renderCustomCTAs(); // Initial render for CTA list and dropdown
             updateApiStatus(localStorage.getItem('geminiApiKey') !== null);
+            // Load sample threads on page load, respecting initial input values
+            generateSampleThreads(selectedTopic, null, selectedOutputFormat, parseInt(numThreadsInput.value) || 3);
 
             // --- Event Listeners ---
             saveApiKeyBtn.addEventListener('click', saveApiKey);
@@ -709,10 +711,8 @@
                     if (record.format === 'thread') {
                         record.content.threads.forEach((thread, index) => {
                             const threadElement = createThread(thread, index, true, record.cta); // true for history, disable editing
-                            // The `createThread` function already adds a 'Salin Semua' button, which is fine for history
-                            // Ensure the header doesn't duplicate the 'Thread X' text if createThread adds it too
                             const innerHeader = threadElement.querySelector('.thread-header');
-                            if(innerHeader) innerHeader.textContent = `Thread ${index + 1}`; // Override if needed
+                            if(innerHeader) innerHeader.textContent = `Thread ${index + 1}`;
                             historyCard.appendChild(threadElement);
                         });
                     } else if (record.format === 'blog-outline') {
@@ -726,15 +726,20 @@
                         `;
                         historyCard.appendChild(contentDiv);
                     } else if (record.format === 'caption') {
-                        const contentDiv = document.createElement('div');
-                        contentDiv.innerHTML = `
-                            <h6 class="mb-2">Caption Singkat:</h6>
-                            <div class="prompt-item">
-                                <span class="editable-content">${record.content.caption.replace(/\n/g, '<br>')}</span>
-                                <button class="copy-btn" onclick="copyToClipboard(this.previousElementSibling.innerText)"><i class="bi bi-clipboard"></i></button>
-                            </div>
-                        `;
-                        historyCard.appendChild(contentDiv);
+                        // Handle multiple captions in history
+                        if (record.content.captions && record.content.captions.length > 0) {
+                            record.content.captions.forEach((caption, index) => {
+                                const contentDiv = document.createElement('div');
+                                contentDiv.innerHTML = `
+                                    <h6 class="mb-2">Caption Singkat ${index + 1}:</h6>
+                                    <div class="prompt-item">
+                                        <span class="editable-content">${caption.replace(/\n/g, '<br>')}</span>
+                                        <button class="copy-btn" onclick="copyToClipboard(this.previousElementSibling.innerText)"><i class="bi bi-clipboard"></i></button>
+                                    </div>
+                                `;
+                                historyCard.appendChild(contentDiv);
+                            });
+                        }
                     }
 
                     // Add image prompt(s) if available
@@ -785,7 +790,7 @@
                     topic: selectedTopic,
                     keywords: specificKeywordsInput.value.trim(),
                     tone: toneStyleSelect.value,
-                    numTips: parseInt(numTipsInput.value) || 7, // Default to 7 if invalid
+                    numThreads: parseInt(numThreadsInput.value) || 3, // Use numThreadsInput
                     audience: targetAudienceSelect.value,
                     outputFormat: selectedOutputFormat,
                     customCta: selectedCtaSelect.value === 'default' ? null : selectedCtaSelect.value,
@@ -882,6 +887,7 @@
                              throw new Error('Tidak ada thread yang dihasilkan.');
                         }
                     } else if (params.outputFormat === 'blog-outline') {
+                        // Assuming AI generates a single outline for now, based on prompt structure
                         if (generatedData.outline) {
                             threadsContainer.innerHTML = `
                                 <div class="thread-card">
@@ -960,8 +966,8 @@
                     console.error('Error:', error);
                     showError(`Gagal menghasilkan konten: ${error.message}. Coba lagi atau sesuaikan prompt.`);
                     
-                    // Fallback to sample threads if error, based on selected format/topic
-                    generateSampleThreads(params.topic, actualCtaText); // Use default CTA here too
+                    // Fallback to sample threads if error, based on selected format/topic and numThreads
+                    generateSampleThreads(params.topic, actualCtaText, params.outputFormat, params.numThreads);
                 } finally {
                     // Sembunyikan loading state
                     loadingSpinner.classList.remove('active');
@@ -971,15 +977,15 @@
 
             // --- Prompt Builders ---
             function buildThreadPrompt(params) {
-                const { topic, keywords, tone, numTips, audience } = params;
+                const { topic, keywords, tone, numThreads, audience } = params;
                 const keywordPhrase = keywords ? ` tentang "${keywords}"` : '';
                 const audiencePhrase = audience !== 'umum' ? ` untuk ${audience}` : '';
 
-                return `Buat 3 thread unik berupa teks saja (tanpa em-dash maupun emoji), dengan gaya bahasa ${tone} dan target audiens ${audiencePhrase}. Topik utamanya adalah ${topic}${keywordPhrase}.
+                return `Buat ${numThreads} thread unik berupa teks saja (tanpa em-dash maupun emoji), dengan gaya bahasa ${tone} dan target audiens ${audiencePhrase}. Topik utamanya adalah ${topic}${keywordPhrase}.
                 
                 Setiap thread harus:
                 1. Diawali dengan kalimat hook yang menarik.
-                2. Berisi ${numTips} tips, tutorial, atau cara praktis.
+                2. Berisi 7 tips, tutorial, atau cara praktis.
                 3. Setiap tips diawali dengan bullet point (•) dan tidak terlalu panjang.
                 
                 Format respons JSON:
@@ -990,7 +996,7 @@
                             "prompts": ["Tips 1", "Tips 2", ...]
                         },
                         {...},
-                        {...}
+                        {...} // Ulangi sejumlah numThreads
                     ]
                 }
                 
@@ -998,10 +1004,12 @@
             }
 
             function buildBlogOutlinePrompt(params) {
-                const { topic, keywords, tone, audience } = params;
+                const { topic, keywords, tone, audience, numThreads } = params;
                 const keywordPhrase = keywords ? ` dengan fokus "${keywords}"` : '';
                 const audiencePhrase = audience !== 'umum' ? ` untuk audiens ${audience}` : '';
 
+                // Untuk outline, umumnya 1 saja. Jika ingin beberapa variasi, struktur JSON perlu diubah
+                // dan AI diminta untuk menghasilkan beberapa objek outline. Untuk simplicity, asumsikan 1 outline.
                 return `Buat outline (kerangka) blog post yang detail dan komprehensif, dengan gaya bahasa ${tone}${audiencePhrase}. Topiknya adalah "${topic}"${keywordPhrase}.
                 
                 Outline harus mencakup:
@@ -1019,11 +1027,11 @@
             }
 
             function buildCaptionPrompt(params) {
-                const { topic, keywords, tone, audience } = params;
+                const { topic, keywords, tone, numThreads, audience } = params;
                 const keywordPhrase = keywords ? ` terkait "${keywords}"` : '';
                 const audiencePhrase = audience !== 'umum' ? ` untuk audiens ${audience}` : '';
 
-                return `Buat 3 caption media sosial yang singkat dan menarik, dengan gaya bahasa ${tone} dan target audiens ${audiencePhrase}. Topiknya adalah "${topic}"${keywordPhrase}.
+                return `Buat ${numThreads} caption media sosial yang singkat dan menarik, dengan gaya bahasa ${tone} dan target audiens ${audiencePhrase}. Topiknya adalah "${topic}"${keywordPhrase}.
                 
                 Setiap caption harus:
                 1. Maksimal 150 kata.
@@ -1034,7 +1042,7 @@
                 
                 Format respons JSON:
                 {
-                    "captions": ["Caption 1", "Caption 2", "Caption 3"]
+                    "captions": ["Caption 1", "Caption 2", "Caption 3"] // Ulangi sejumlah numThreads
                 }
                 
                 Pastikan respons dalam format JSON yang valid.`;
@@ -1060,7 +1068,7 @@
                     copyAllBtn.addEventListener('click', function() {
                         let fullThreadText = threadData.hook + '\n\n';
                         threadData.prompts.forEach(p => {
-                            fullThreadText += `• ${p}\n`;
+                            fullThreadText += `${p}\n`; // Prompts already start with bullet from AI
                         });
                         fullThreadText += `\n${ctaText}`;
                         copyToClipboard(fullThreadText);
@@ -1096,7 +1104,7 @@
                     
                     const promptText = document.createElement('span');
                     promptText.className = 'editable-content';
-                    promptText.textContent = `• ${prompt}`;
+                    promptText.textContent = `${prompt}`; // AI already provides bullet points, no need to add here
                     if (!isHistory) { // Enable editing only for current generation
                         promptText.setAttribute('contenteditable', 'true');
                     }
@@ -1148,19 +1156,24 @@
             // --- Image Prompt Generation ---
             function buildImagePromptFromContent(content, topic, keywords, format = 'thread') {
                 let mainTextForImage = '';
+                let dynamicVisualConcept = '';
+
                 if (format === 'thread') {
-                    // For threads, content is the hook
-                    mainTextForImage = content.split('.')[0].trim(); // Get the first sentence of the hook
+                    // Untuk thread, ambil inti dari hook atau kalimat pertama
+                    mainTextForImage = content.split('.')[0].trim();
+                    dynamicVisualConcept = `Mencerminkan esensi dari hook: "${mainTextForImage}".`;
                 } else if (format === 'blog-outline') {
-                    // For blog outline, extract the title
+                    // Untuk blog outline, ekstrak judul atau bagian awal outline
                     const titleMatch = content.match(/^Judul Blog Post:\s*([^\n]+)/);
                     mainTextForImage = titleMatch ? titleMatch[1].trim() : (content.split('\n')[0] || '').replace('Judul Blog Post:', '').trim();
+                    dynamicVisualConcept = `Menggambarkan tema utama dari outline berjudul: "${mainTextForImage}".`;
                 } else if (format === 'caption') {
-                    // For caption, use the first part of the caption
-                    mainTextForImage = content.split('. ')[0].trim(); // Get the first sentence of the caption
+                    // Untuk caption, gunakan bagian awal caption
+                    mainTextForImage = content.split('. ')[0].trim();
+                    dynamicVisualConcept = `Merepresentasikan ide inti dari caption: "${mainTextForImage}".`;
                 }
 
-                if (mainTextForImage.length > 70) mainTextForImage = mainTextForImage.substring(0, 70) + '...'; // Truncate long texts for brevity in prompt
+                if (mainTextForImage.length > 70) mainTextForImage = mainTextForImage.substring(0, 70) + '...'; // Potong teks panjang untuk prompt singkat
 
                 let styleDescription = '';
                 switch(toneStyleSelect.value) {
@@ -1171,14 +1184,15 @@
                     default: styleDescription = 'a clear, modern, and informative graphic design style'; break;
                 }
 
-                // Base visual description, always consistent with the example image
+                // Deskripsi visual dasar yang konsisten dengan contoh gambar
                 const baseVisual = `A vibrant, futuristic, and digital illustration. The scene features diverse people (adults and children) actively engaged with glowing laptops, tablets, and smartphones, surrounded by interconnected blue and pink digital lines, circuit patterns, and abstract data streams, symbolizing technology and connectivity in education.`;
 
-                // Instruction for the fixed text overlay
+                // Instruksi untuk overlay teks tetap
                 const textOverlayInstruction = `Include the exact text 'PEMBELAJARAN JARAK JAUH' prominently displayed in the image, integrated subtly into the digital elements or as a holographic projection.`;
 
-                // Dynamic content integration based on the specific generated text
-                const dynamicContentIntegration = `Visually interpret the core theme of "${mainTextForImage}" within this digital learning environment, emphasizing aspects like ${topic}${keywords ? ` and ${keywords}` : ''}.`;
+                // Integrasi konten dinamis yang relevan dengan topik dan keyword
+                // Menggunakan mainTextForImage untuk konteks yang lebih spesifik dalam prompt gambar
+                const dynamicContentIntegration = `Visually interpret the core theme related to ${topic}${keywords ? ` and ${keywords}` : ''}, specifically emphasizing "${mainTextForImage}".`;
                 
                 return `${baseVisual} ${dynamicContentIntegration} ${textOverlayInstruction} Overall mood: innovative, educational, and accessible. Style: ${styleDescription}. --ar 16:9 --v 5.2 --q 2`;
             }
@@ -1219,13 +1233,13 @@
             }
 
             // --- Sample Threads (Fallback) ---
-            function generateSampleThreads(topic, ctaText) {
-                let threads = [];
+            function generateSampleThreads(topic, ctaText, outputFormat = 'thread', numContents = 3) {
+                let threads = []; // This will hold content regardless of format (threads, outlines, captions)
                 let ctaUsed = ctaText || `PS: Saya juga buka kelas AI untuk kamu yang benar-benar awam!\nKeunggulannya: setiap hari ada postingan tutorial terbaru, update terus.\nBelajar bisa kapan saja mulai jam 08.00 sampai 00.00 WIB.\nBebas belajar sampai bisa, sistem bayar per 10 hari.\nDan yang paling penting, harganya terjangkau dan disesuaikan.\nLangsung klik: https://lynk.id/vdmax`;
                 
                 let sampleImagePrompts = [];
                 let previewMainContent = '';
-                let previewPrompts = [];
+                let previewPrompts = []; // For thread type only
 
                 // Clear containers first
                 threadsContainer.innerHTML = '';
@@ -1233,61 +1247,87 @@
                 imagePromptSection.style.display = 'none';
                 previewSection.style.display = 'none';
 
-                if (selectedOutputFormat === 'thread') {
-                    switch(topic) {
-                        case 'chatgpt':
-                            threads = [
-                                {
-                                    hook: "Punya bisnis kecil atau kerja freelance? Gunakan ChatGPT buat bantu kerja lebih cepat dan hemat waktu.",
-                                    prompts: [
-                                        "Buat template penawaran harga untuk jasa desain grafis",
-                                        "Tulis ulang deskripsi produk ini agar lebih menjual dan jelas",
-                                        "Buat daftar pertanyaan wawancara awal untuk klien baru",
-                                        "Susun email follow-up profesional untuk prospek yang belum merespons",
-                                        "Rancang 3 opsi bio Instagram bisnis yang singkat dan efektif",
-                                        "Buat ringkasan pitch produk 60 detik untuk presentasi lisan",
-                                        "Ubah testimoni pelanggan ini jadi konten testimonial bergaya narasi"
-                                    ]
-                                },
-                                {
-                                    hook: "Ingin meningkatkan produktivitas kerja? ChatGPT bisa jadi asisten pribadi Anda untuk berbagai tugas.",
-                                    prompts: [
-                                        "Buat ringkasan meeting dari catatan ini dalam poin-poin penting",
-                                        "Susun agenda meeting untuk tim produktif dengan durasi 30 menit",
-                                        "Tulis draft email untuk meminta perpanjangan deadline proyek",
-                                        "Buat prioritas tugas harian berdasarkan daftar pekerjaan ini",
-                                        "Rancang template laporan progress mingguan yang singkat dan jelas",
-                                        "Tulis 3 opsi balasan untuk email keluhan pelanggan",
-                                        "Buat daftar pertanyaan untuk evaluasi performa karyawan"
-                                    ]
-                                }
-                            ];
-                            break;
-                        default: // umum
-                            threads = [
-                                {
-                                    hook: "Ponsel pintar Anda mulai terasa lambat dan kurang responsif?",
-                                    prompts: [
-                                        "Hapus aplikasi yang tidak terpakai secara rutin untuk membebaskan ruang penyimpanan.",
-                                        "Bersihkan cache aplikasi secara berkala melalui pengaturan ponsel Anda.",
-                                        "Nonaktifkan fitur sinkronisasi otomatis untuk aplikasi yang tidak esensial.",
-                                        "Hindari penggunaan banyak widget di layar utama yang dapat memakan sumber daya.",
-                                        "Perbarui sistem operasi dan aplikasi Anda ke versi terbaru untuk perbaikan kinerja."
-                                    ]
-                                },
-                                {
-                                    hook: "Sering merasa baterai HP cepat habis dan performa menurun?",
-                                    prompts: [
-                                        "Kurangi kecerahan layar dan aktifkan mode hemat daya.",
-                                        "Tutup aplikasi yang berjalan di latar belakang saat tidak digunakan.",
-                                        "Nonaktifkan lokasi, Bluetooth, dan Wi-Fi jika tidak diperlukan.",
-                                        "Hindari paparan suhu ekstrem yang dapat merusak baterai.",
-                                        "Gunakan pengisi daya original atau berkualitas tinggi.",
-                                        "Lakukan restart ponsel secara berkala untuk menyegarkan sistem."
-                                    ]
-                                }
-                            ];
-                    }
+                if (outputFormat === 'thread') {
+                    const allSampleThreads = {
+                        'chatgpt': [
+                            {
+                                hook: "Punya bisnis kecil atau kerja freelance? Gunakan ChatGPT buat bantu kerja lebih cepat dan hemat waktu.",
+                                prompts: [
+                                    "• Buat template penawaran harga untuk jasa desain grafis",
+                                    "• Tulis ulang deskripsi produk ini agar lebih menjual dan jelas",
+                                    "• Buat daftar pertanyaan wawancara awal untuk klien baru",
+                                    "• Susun email follow-up profesional untuk prospek yang belum merespons",
+                                    "• Rancang 3 opsi bio Instagram bisnis yang singkat dan efektif",
+                                    "• Buat ringkasan pitch produk 60 detik untuk presentasi lisan",
+                                    "• Ubah testimoni pelanggan ini jadi konten testimonial bergaya narasi"
+                                ]
+                            },
+                            {
+                                hook: "Ingin meningkatkan produktivitas kerja? ChatGPT bisa jadi asisten pribadi Anda untuk berbagai tugas.",
+                                prompts: [
+                                    "• Buat ringkasan meeting dari catatan ini dalam poin-poin penting",
+                                    "• Susun agenda meeting untuk tim produktif dengan durasi 30 menit",
+                                    "• Tulis draft email untuk meminta perpanjangan deadline proyek",
+                                    "• Buat prioritas tugas harian berdasarkan daftar pekerjaan ini",
+                                    "• Rancang template laporan progress mingguan yang singkat dan jelas",
+                                    "• Tulis 3 opsi balasan untuk email keluhan pelanggan",
+                                    "• Buat daftar pertanyaan untuk evaluasi performa karyawan"
+                                ]
+                            },
+                            {
+                                hook: "Jelajahi fitur lanjutan ChatGPT untuk memaksimalkan potensi AI Anda.",
+                                prompts: [
+                                    "• Manfaatkan 'Custom Instructions' untuk personalisasi respons AI.",
+                                    "• Gunakan fitur 'Code Interpreter' untuk analisis data dan visualisasi.",
+                                    "• Pelajari cara membuat 'Prompts' yang efektif untuk hasil optimal.",
+                                    "• Integrasikan ChatGPT dengan alat lain melalui API.",
+                                    "• Pahami batasan dan etika penggunaan AI untuk hasil yang bertanggung jawab.",
+                                    "• Ikuti update terbaru fitur ChatGPT agar tidak ketinggalan.",
+                                    "• Gabungkan ChatGPT dengan strategi SEO untuk konten yang powerful."
+                                ]
+                            }
+                        ],
+                        'umum': [
+                            {
+                                hook: "Ponsel pintar Anda mulai terasa lambat dan kurang responsif?",
+                                prompts: [
+                                    "• Hapus aplikasi yang tidak terpakai secara rutin untuk membebaskan ruang penyimpanan.",
+                                    "• Bersihkan cache aplikasi secara berkala melalui pengaturan ponsel Anda.",
+                                    "• Nonaktifkan fitur sinkronisasi otomatis untuk aplikasi yang tidak esensial.",
+                                    "• Hindari penggunaan banyak widget di layar utama yang dapat memakan sumber daya.",
+                                    "• Perbarui sistem operasi dan aplikasi Anda ke versi terbaru untuk perbaikan kinerja."
+                                ]
+                            },
+                            {
+                                hook: "Sering merasa baterai HP cepat habis dan performa menurun?",
+                                prompts: [
+                                    "• Kurangi kecerahan layar dan aktifkan mode hemat daya.",
+                                    "• Tutup aplikasi yang berjalan di latar belakang saat tidak digunakan.",
+                                    "• Nonaktifkan lokasi, Bluetooth, dan Wi-Fi jika tidak diperlukan.",
+                                    "• Hindari paparan suhu ekstrem yang dapat merusak baterai.",
+                                    "• Gunakan pengisi daya original atau berkualitas tinggi.",
+                                    "• Lakukan restart ponsel secara berkala untuk menyegarkan sistem."
+                                ]
+                            },
+                            {
+                                hook: "Optimalkan pengalaman digital Anda dengan tips penggunaan internet yang aman dan efisien.",
+                                prompts: [
+                                    "• Gunakan password yang kuat dan unik untuk setiap akun online Anda.",
+                                    "• Aktifkan Two-Factor Authentication (2FA) di semua layanan penting.",
+                                    "• Berhati-hati dengan tautan mencurigakan dan email phising.",
+                                    "• Perbarui browser dan software keamanan Anda secara teratur.",
+                                    "• Gunakan VPN saat terhubung ke Wi-Fi publik untuk privasi.",
+                                    "• Rutin periksa izin aplikasi di ponsel Anda.",
+                                    "• Pahami kebijakan privasi layanan online yang Anda gunakan."
+                                ]
+                            }
+                        ]
+                        // Tambahkan lebih banyak sample untuk topik lain jika perlu
+                    };
+                    
+                    const availableSamples = allSampleThreads[topic] || allSampleThreads['umum'];
+                    threads = availableSamples.slice(0, numContents); // Use numContents here
+
                     threads.forEach((thread, index) => {
                         const threadElement = createThread(thread, index, false, ctaUsed);
                         threadsContainer.appendChild(threadElement);
@@ -1298,28 +1338,42 @@
                         previewPrompts = threads[0].prompts;
                     }
 
+                } else if (outputFormat === 'blog-outline') {
+                    // Sample outlines - will only show one, but can be expanded
+                    const sampleOutlines = [
+                        `Judul Blog Post: ${topic} dan Masa Depan Kita\n\nI. Pendahuluan\n   A. Apa itu ${topic} dan mengapa penting?\n   B. Gambaran singkat evolusi ${topic}\nII. Aplikasi ${topic} dalam Kehidupan Sehari-hari\n   A. Contoh di smartphone Anda\n   B. Di industri dan bisnis\nIII. Tantangan dan Etika ${topic}\n   A. Isu privasi data\n   B. Potensi bias AI\nIV. Masa Depan ${topic} dan Rekomendasi\n   A. Prediksi perkembangan ke depan\n   B. Cara beradaptasi dengan ${topic}\nV. Kesimpulan\n   A. Ringkasan poin kunci\n   B. Ajakan untuk eksplorasi lebih lanjut`,
+                        `Judul Blog Post: Panduan Lengkap Memulai dengan ${topic}\n\nI. Pendahuluan: Mengapa ${topic}?\n   A. Pengertian dasar dan manfaatnya.\n   B. Target audiens dan tujuan blog.\nII. Langkah Awal Mempelajari ${topic}\n   A. Sumber belajar terbaik (kursus, buku, tutorial).\n   B. Konsep dasar yang harus dipahami.\nIII. Proyek Praktis Sederhana dengan ${topic}\n   A. Ide proyek untuk pemula.\n   B. Alat dan sumber daya yang dibutuhkan.\nIV. Menghindari Jebakan Umum dalam ${topic}\n   A. Kesalahan yang sering dilakukan pemula.\n   B. Tips mengatasi tantangan.\nV. Kesimpulan\n   A. Recap poin penting.\n   B. Langkah selanjutnya untuk pendalaman.`
+                    ];
 
-                } else if (selectedOutputFormat === 'blog-outline') {
-                    const sampleOutlineText = `Judul Blog Post: ${topic} dan Masa Depan Kita\n\nI. Pendahuluan\n   A. Apa itu ${topic} dan mengapa penting?\n   B. Gambaran singkat evolusi ${topic}\nII. Aplikasi ${topic} dalam Kehidupan Sehari-hari\n   A. Contoh di smartphone Anda\n   B. Di industri dan bisnis\nIII. Tantangan dan Etika ${topic}\n   A. Isu privasi data\n   B. Potensi bias AI\nIV. Masa Depan ${topic} dan Rekomendasi\n   A. Prediksi perkembangan ke depan\n   B. Cara beradaptasi dengan ${topic}\nV. Kesimpulan\n   A. Ringkasan poin kunci\n   B. Ajakan untuk eksplorasi lebih lanjut`;
+                    const outlinesToDisplay = sampleOutlines.slice(0, numContents);
                     
-                    threadsContainer.innerHTML = `
-                        <div class="thread-card">
-                            <h4 class="mb-3">Outline Blog Post</h4>
-                            <div class="prompt-item editable-content" contenteditable="true">${sampleOutlineText.replace(/\n/g, '<br>')}</div>
-                            <button class="btn btn-sm btn-outline-primary mt-3" onclick="copyToClipboard(document.querySelector('.thread-card .prompt-item.editable-content').innerText)"><i class="bi bi-clipboard me-1"></i> Salin Outline</button>
-                        </div>
-                    `;
-                    previewMainContent = sampleOutlineText;
-                    sampleImagePrompts.push(buildImagePromptFromContent(sampleOutlineText, topic, specificKeywordsInput.value.trim(), 'blog-outline'));
+                    outlinesToDisplay.forEach((outlineText, index) => {
+                        threadsContainer.innerHTML += `
+                            <div class="thread-card mb-3">
+                                <h4 class="mb-3">Outline Blog Post ${index + 1}</h4>
+                                <div class="prompt-item editable-content" contenteditable="true">${outlineText.replace(/\n/g, '<br>')}</div>
+                                <button class="btn btn-sm btn-outline-primary mt-3" onclick="copyToClipboard(this.previousElementSibling.innerText)"><i class="bi bi-clipboard me-1"></i> Salin Outline</button>
+                            </div>
+                        `;
+                        // Only generate image prompt for the first outline for preview simplicity
+                        if (index === 0) {
+                            previewMainContent = outlineText;
+                            sampleImagePrompts.push(buildImagePromptFromContent(outlineText, topic, specificKeywordsInput.value.trim(), 'blog-outline'));
+                        }
+                    });
 
-                } else if (selectedOutputFormat === 'caption') {
-                    const sampleCaptions = [
+                } else if (outputFormat === 'caption') {
+                    const allSampleCaptions = [
                         `Kecerdasan Buatan mengubah segalanya! Mulai dari cara kita bekerja hingga berinteraksi. Jangan ketinggalan era ini, pelajari dasar-dasarnya sekarang!\n\n#AI #MasaDepan #Teknologi`,
                         `Bingung cara kerja AI? Yuk, intip 3 hal dasar yang wajib kamu tahu! Dijamin bikin kamu paham teknologi masa depan.\n\n#AIExplained #TechForLife #BelajarAI`,
-                        `Siap untuk revolusi AI? Manfaatkan teknologi ini untuk produktivitas maksimal. Klik link di bio untuk panduan lengkap!\n\n#AIRevolution #ProductivityHacks #FutureIsNow`
+                        `Siap untuk revolusi AI? Manfaatkan teknologi ini untuk produktivitas maksimal. Klik link di bio untuk panduan lengkap!\n\n#AIRevolution #ProductivityHacks #FutureIsNow`,
+                        `AI itu bukan cuma robot! Dia ada di aplikasi favoritmu. Pelajari cara AI mempermudah hidupmu setiap hari.\n\n#AI #EverydayAI #Innovasi`,
+                        `Peluang karir di dunia AI? Sangat besar! Siapkan dirimu dengan skill yang relevan. Masa depan ada di tanganmu.\n\n#AICareer #FutureSkills #TechJobs`
                     ];
                     
-                    sampleCaptions.forEach((caption, index) => {
+                    const captionsToDisplay = allSampleCaptions.slice(0, numContents); // Use numContents here
+
+                    captionsToDisplay.forEach((caption, index) => {
                         const captionDiv = document.createElement('div');
                         captionDiv.className = 'thread-card'; // Reuse style
                         captionDiv.innerHTML = `
@@ -1330,12 +1384,13 @@
                         threadsContainer.appendChild(captionDiv);
                         sampleImagePrompts.push(buildImagePromptFromContent(caption, topic, specificKeywordsInput.value.trim(), 'caption'));
                     });
-                    if (sampleCaptions.length > 0) {
-                        previewMainContent = sampleCaptions[0];
+                    if (captionsToDisplay.length > 0) {
+                        previewMainContent = captionsToDisplay[0];
                     }
                 }
 
                 // Display sample image prompts
+                generatedImagePromptsContainer.innerHTML = '';
                 sampleImagePrompts.forEach(imgPrompt => {
                     const promptItemDiv = document.createElement('div');
                     promptItemDiv.className = 'image-prompt-item';
@@ -1356,13 +1411,11 @@
                 });
                 imagePromptSection.style.display = 'block';
 
-                renderPostingPreview(previewMainContent, previewPrompts, ctaUsed, selectedOutputFormat);
+                renderPostingPreview(previewMainContent, previewPrompts, ctaUsed, outputFormat);
 
                 lastGeneratedSpan.textContent = new Date().toLocaleString('id-ID') + ' (Sample)';
             }
 
-            // Load sample threads on page load
-            generateSampleThreads(selectedTopic, null); // Pass null for ctaText to use default CTA initially
 
             // Simulate daily thread generation (for actual use, this would be a backend cron job)
             function simulateDailyGeneration() {
@@ -1377,7 +1430,7 @@
                             topic: selectedTopic,
                             keywords: '', // Daily gen might use broader keywords
                             tone: 'informatif',
-                            numTips: 7,
+                            numThreads: 3, // Default to 3 for automated generation
                             audience: 'umum',
                             outputFormat: 'thread',
                             customCta: null,
@@ -1386,7 +1439,7 @@
                     } else {
                         // Use default CTA text for sample generation
                         const defaultCta = `PS: Saya juga buka kelas AI untuk kamu yang benar-benar awam!\nKeunggulannya: setiap hari ada postingan tutorial terbaru, update terus.\nBelajar bisa kapan saja mulai jam 08.00 sampai 00.00 WIB.\nBebas belajar sampai bisa, sistem bayar per 10 hari.\nDan yang paling penting, harganya terjangkau dan disesuaikan.\nLangsung klik: https://lynk.id/vdmax`;
-                        generateSampleThreads(selectedTopic, defaultCta);
+                        generateSampleThreads(selectedTopic, defaultCta, 'thread', 3);
                     }
                 }
             }
