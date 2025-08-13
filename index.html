@@ -263,7 +263,29 @@
         </div>
 
         <div class="generate-section">
-            <h4>Generate Konten AI Manual</h4>
+            <h4 class="mb-3">Manajemen Persona</h4>
+            <p class="text-muted">Simpan dan muat konfigurasi generator Anda untuk penggunaan berulang.</p>
+            <div class="row align-items-end">
+                <div class="col-lg-6 mb-3 mb-lg-0">
+                    <label for="personaSelector" class="form-label fw-bold">Muat Persona</label>
+                    <div class="input-group">
+                        <select id="personaSelector" class="form-select">
+                            <option value="">Pilih persona...</option>
+                        </select>
+                        <button id="loadPersonaBtn" class="btn btn-primary" title="Muat Persona"><i class="bi bi-box-arrow-down"></i> Muat</button>
+                        <button id="deletePersonaBtn" class="btn btn-outline-danger" title="Hapus Persona Terpilih"><i class="bi bi-trash"></i></button>
+                    </div>
+                </div>
+                <div class="col-lg-6">
+                    <label for="personaName" class="form-label fw-bold">Simpan Persona Baru</label>
+                    <div class="input-group">
+                        <input type="text" id="personaName" class="form-control" placeholder="Contoh: Blogger Teknologi">
+                        <button id="savePersonaBtn" class="btn btn-success" title="Simpan Pengaturan Saat Ini"><i class="bi bi-save"></i> Simpan</button>
+                    </div>
+                </div>
+            </div>
+            <hr class="my-4">
+            <h4 class="mt-4">Generate Konten AI Manual</h4>
             <p class="text-muted">Pilih preferensi dan klik tombol di bawah untuk generate konten baru secara manual</p>
             
             <div class="mb-4">
@@ -281,12 +303,15 @@
             </div>
 
             <div class="row mb-3">
-                <div class="col-md-6 mb-3 mb-md-0">
+                <div class="col-12">
                     <label for="specificKeywords" class="form-label fw-bold">Keyword Spesifik (Opsional):</label>
                     <input type="text" id="specificKeywords" class="form-control" placeholder="Contoh: 'optimasi SEO', 'tips belajar cepat'">
                     <div class="form-text">Masukkan kata kunci tambahan untuk topik yang lebih fokus.</div>
                 </div>
-                <div class="col-md-6">
+            </div>
+
+            <div class="row mb-3">
+                <div class="col-md-6 mb-3 mb-md-0">
                     <label for="toneStyle" class="form-label fw-bold">Gaya Bahasa & Tone:</label>
                     <select id="toneStyle" class="form-select">
                         <option value="informatif">Informatif & Formal</option>
@@ -294,6 +319,18 @@
                         <option value="motivasi">Motivasi & Inspiratif</option>
                         <option value="humor">Humor & Lucu</option>
                         <option value="profesional">Profesional & Bisnis</option>
+                    </select>
+                </div>
+                <div class="col-md-6">
+                    <label for="languageSelector" class="form-label fw-bold">Bahasa Output:</label>
+                    <select id="languageSelector" class="form-select">
+                        <option value="Indonesian">Bahasa Indonesia (Default)</option>
+                        <option value="English">English</option>
+                        <option value="Spanish">Español (Spanish)</option>
+                        <option value="Japanese">日本語 (Japanese)</option>
+                        <option value="Arabic">العربية (Arabic)</option>
+                        <option value="French">Français (French)</option>
+                        <option value="German">Deutsch (German)</option>
                     </select>
                 </div>
             </div>
@@ -451,6 +488,7 @@
             let selectedOutputFormat = 'thread';
             let customCTAs = [];
             let generatedContentHistory = [];
+            let personas = {};
 
             // --- UI Elements Cache ---
             const apiKeyInput = document.getElementById('apiKey');
@@ -479,13 +517,21 @@
             const instagramPreviewDiv = document.getElementById('instagramPreview');
             const historyContentDiv = document.getElementById('historyContent');
             const clearHistoryBtn = document.getElementById('clearHistoryBtn');
+            const personaNameInput = document.getElementById('personaName');
+            const savePersonaBtn = document.getElementById('savePersonaBtn');
+            const personaSelector = document.getElementById('personaSelector');
+            const loadPersonaBtn = document.getElementById('loadPersonaBtn');
+            const deletePersonaBtn = document.getElementById('deletePersonaBtn');
+            const languageSelector = document.getElementById('languageSelector');
 
 
             // --- Initialization ---
             loadApiKey();
             loadCustomCTAs();
             loadGeneratedHistory();
+            loadPersonas();
             renderCustomCTAs(); // Initial render for CTA list and dropdown
+            renderPersonas();
             updateApiStatus(localStorage.getItem('geminiApiKey') !== null);
             // Load sample threads on page load, respecting initial input values
             generateSampleThreads(selectedTopic, null, selectedOutputFormat, parseInt(numThreadsInput.value) || 3);
@@ -513,6 +559,178 @@
 
             addCtaBtn.addEventListener('click', addCustomCta);
             ctaListDiv.addEventListener('click', handleCtaListActions); // Delegate events for edit/delete buttons
+            savePersonaBtn.addEventListener('click', saveCurrentPersona);
+            loadPersonaBtn.addEventListener('click', loadSelectedPersona);
+            deletePersonaBtn.addEventListener('click', deleteSelectedPersona);
+
+            // --- Persona Management ---
+            function loadPersonas() {
+                const savedPersonas = localStorage.getItem('personas');
+                if (savedPersonas) {
+                    personas = JSON.parse(savedPersonas);
+                }
+            }
+
+            function savePersonas() {
+                localStorage.setItem('personas', JSON.stringify(personas));
+            }
+
+            function renderPersonas() {
+                personaSelector.innerHTML = '<option value="">Pilih persona...</option>';
+                for (const name in personas) {
+                    const option = document.createElement('option');
+                    option.value = name;
+                    option.textContent = name;
+                    personaSelector.appendChild(option);
+                }
+            }
+
+            function saveCurrentPersona() {
+                const name = personaNameInput.value.trim();
+                if (!name) {
+                    showError('Nama persona tidak boleh kosong.');
+                    return;
+                }
+                if (personas[name]) {
+                    if (!confirm(`Persona dengan nama "${name}" sudah ada. Anda yakin ingin menimpanya?`)) {
+                        return;
+                    }
+                }
+
+                personas[name] = {
+                    topic: selectedTopic,
+                    keywords: specificKeywordsInput.value,
+                    tone: toneStyleSelect.value,
+                    numThreads: numThreadsInput.value,
+                    audience: targetAudienceSelect.value,
+                    outputFormat: selectedOutputFormat,
+                    cta: selectedCtaSelect.value,
+                    language: languageSelector.value
+                };
+
+                savePersonas();
+                renderPersonas();
+                personaNameInput.value = '';
+                showToast(`Persona "${name}" berhasil disimpan.`);
+            }
+
+            function loadSelectedPersona() {
+                const name = personaSelector.value;
+                if (!name) {
+                    showError('Silakan pilih persona untuk dimuat.');
+                    return;
+                }
+                const persona = personas[name];
+
+                // Update Topic
+                topicBadges.forEach(b => {
+                    if (b.getAttribute('data-topic') === persona.topic) {
+                        b.classList.add('active');
+                        selectedTopic = persona.topic;
+                    } else {
+                        b.classList.remove('active');
+                    }
+                });
+
+                // Update Output Format
+                outputFormatBadges.forEach(b => {
+                    if (b.getAttribute('data-format') === persona.outputFormat) {
+                        b.classList.add('active');
+                        selectedOutputFormat = persona.outputFormat;
+                    } else {
+                        b.classList.remove('active');
+                    }
+                });
+
+                // Update other fields
+                specificKeywordsInput.value = persona.keywords;
+                toneStyleSelect.value = persona.tone;
+                numThreadsInput.value = persona.numThreads;
+                targetAudienceSelect.value = persona.audience;
+                selectedCtaSelect.value = persona.cta;
+                languageSelector.value = persona.language || 'Indonesian'; // Fallback for older personas
+
+                showToast(`Persona "${name}" berhasil dimuat.`);
+            }
+
+            function deleteSelectedPersona() {
+                const name = personaSelector.value;
+                if (!name) {
+                    showError('Silakan pilih persona untuk dihapus.');
+                    return;
+                }
+                if (confirm(`Anda yakin ingin menghapus persona "${name}"?`)) {
+                    delete personas[name];
+                    savePersonas();
+                    renderPersonas();
+                    showToast(`Persona "${name}" berhasil dihapus.`);
+                }
+            }
+
+            // --- Content Analysis ---
+            function analyzeText(text, keywordsStr) {
+                if (!text) {
+                    return { wordCount: 0, sentenceCount: 0, charCount: 0, avgSentenceLength: 0, keywordAnalysis: [] };
+                }
+
+                const words = text.match(/\b(\w+)\b/g) || [];
+                const sentences = text.split(/[.!?]+/).filter(Boolean);
+                const charCount = text.length;
+                const wordCount = words.length;
+                const sentenceCount = sentences.length > 0 ? sentences.length : 1;
+                const avgSentenceLength = (wordCount / sentenceCount).toFixed(1);
+
+                const keywordAnalysis = [];
+                if (keywordsStr) {
+                    const keywords = keywordsStr.split(',').map(k => k.trim().toLowerCase()).filter(Boolean);
+                    const textLower = text.toLowerCase();
+                    keywords.forEach(keyword => {
+                        const regex = new RegExp('\\b' + keyword + '\\b', 'gi');
+                        const count = (text.match(regex) || []).length;
+                        const density = wordCount > 0 ? ((count / wordCount) * 100).toFixed(2) : 0;
+                        keywordAnalysis.push({ keyword, count, density });
+                    });
+                }
+
+                return { wordCount, sentenceCount, charCount, avgSentenceLength, keywordAnalysis };
+            }
+
+            function createAnalysisElement(analysisData) {
+                const analysisContainer = document.createElement('div');
+                analysisContainer.className = 'analysis-section mt-3 p-3';
+                analysisContainer.style.backgroundColor = '#f8f9fa';
+                analysisContainer.style.borderRadius = '8px';
+                analysisContainer.style.display = 'none'; // Initially hidden
+
+                let keywordHtml = '<h6>Analisis Kata Kunci</h6>';
+                if (analysisData.keywordAnalysis.length > 0) {
+                    keywordHtml += '<ul class="list-unstyled mb-0">';
+                    analysisData.keywordAnalysis.forEach(kw => {
+                        keywordHtml += `<li><strong>"${kw.keyword}":</strong> Ditemukan ${kw.count} kali (Kepadatan: ${kw.density}%)</li>`;
+                    });
+                    keywordHtml += '</ul>';
+                } else {
+                    keywordHtml += '<p class="text-muted small mb-0">Tidak ada kata kunci spesifik yang dimasukkan untuk dianalisis.</p>';
+                }
+
+                analysisContainer.innerHTML = `
+                    <div class="row">
+                        <div class="col-md-6">
+                            <h6>Statistik Teks</h6>
+                            <ul class="list-unstyled mb-3 mb-md-0 small">
+                                <li><strong>Jumlah Karakter:</strong> ${analysisData.charCount}</li>
+                                <li><strong>Jumlah Kata:</strong> ${analysisData.wordCount}</li>
+                                <li><strong>Jumlah Kalimat:</strong> ${analysisData.sentenceCount}</li>
+                                <li><strong>Rata-rata Kata/Kalimat:</strong> ${analysisData.avgSentenceLength}</li>
+                            </ul>
+                        </div>
+                        <div class="col-md-6">
+                            ${keywordHtml}
+                        </div>
+                    </div>
+                `;
+                return analysisContainer;
+            }
 
             // --- API Key Management ---
             function loadApiKey() {
@@ -597,6 +815,110 @@
                 } finally {
                     document.body.removeChild(textarea);
                 }
+            }
+
+            // --- Export and Action Buttons ---
+            function downloadContent(text, filename) {
+                const blob = new Blob([text], { type: 'text/plain;charset=utf-8' });
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = filename;
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+                URL.revokeObjectURL(url);
+            }
+
+            function createActionButtons(contentData, ctaText, format, baseFilename) {
+                const btnGroup = document.createElement('div');
+                btnGroup.className = 'btn-group';
+
+                const formatContent = (asMarkdown) => {
+                    let text = '';
+                    let fullTextToCopy = '';
+                    if (format === 'thread') {
+                        const hook = contentData.hook;
+                        const prompts = contentData.prompts;
+                        fullTextToCopy = `${hook}\n\n${prompts.join('\n')}\n\n${ctaText}`;
+                        if (asMarkdown) {
+                            text = `## ${hook}\n\n`;
+                            prompts.forEach(p => { text += `${p}\n`; });
+                            text += `\n**CTA:**\n${ctaText}`;
+                        } else {
+                            text = fullTextToCopy;
+                        }
+                    } else if (format === 'blog-outline') {
+                        text = contentData.outline;
+                        if (asMarkdown) {
+                            text = text
+                                .replace(/^Judul Blog Post:\s*(.*)/gm, '# $1')
+                                .replace(/(\n[IVX]+\.)/g, '\n##')
+                                .replace(/(\n\s+[A-Z]\.)/g, '\n*');
+                        }
+                    } else if (format === 'caption') {
+                        text = contentData; // contentData is just the caption string
+                    }
+                    return { text, fullTextToCopy };
+                };
+
+                // Copy All Button
+                const copyAllBtn = document.createElement('button');
+                copyAllBtn.className = 'btn btn-sm btn-outline-secondary';
+                copyAllBtn.innerHTML = '<i class="bi bi-clipboard me-1"></i> Salin Semua';
+                copyAllBtn.addEventListener('click', () => {
+                    const { text, fullTextToCopy } = formatContent(false);
+                    copyToClipboard(fullTextToCopy || text);
+                });
+
+                // Dropdown Toggle
+                const dropdownToggle = document.createElement('button');
+                dropdownToggle.type = 'button';
+                dropdownToggle.className = 'btn btn-sm btn-outline-secondary dropdown-toggle dropdown-toggle-split';
+                dropdownToggle.setAttribute('data-bs-toggle', 'dropdown');
+                dropdownToggle.setAttribute('aria-expanded', 'false');
+                dropdownToggle.innerHTML = '<span class="visually-hidden">Toggle Dropdown</span>';
+
+                // Dropdown Menu
+                const dropdownMenu = document.createElement('ul');
+                dropdownMenu.className = 'dropdown-menu';
+
+                const san_fname = baseFilename.replace(/[^a-z0-9]/gi, '_').toLowerCase();
+
+                // Export TXT
+                const exportTxtLi = document.createElement('li');
+                const exportTxtLink = document.createElement('a');
+                exportTxtLink.className = 'dropdown-item';
+                exportTxtLink.href = '#';
+                exportTxtLink.textContent = 'Ekspor sebagai .txt';
+                exportTxtLink.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    const { text } = formatContent(false);
+                    downloadContent(text, `${san_fname}.txt`);
+                });
+                exportTxtLi.appendChild(exportTxtLink);
+
+                // Export MD
+                const exportMdLi = document.createElement('li');
+                const exportMdLink = document.createElement('a');
+                exportMdLink.className = 'dropdown-item';
+                exportMdLink.href = '#';
+                exportMdLink.textContent = 'Ekspor sebagai .md';
+                exportMdLink.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    const { text } = formatContent(true);
+                    downloadContent(text, `${san_fname}.md`);
+                });
+                exportMdLi.appendChild(exportMdLink);
+
+                dropdownMenu.appendChild(exportTxtLi);
+                dropdownMenu.appendChild(exportMdLi);
+
+                btnGroup.appendChild(copyAllBtn);
+                btnGroup.appendChild(dropdownToggle);
+                btnGroup.appendChild(dropdownMenu);
+
+                return btnGroup;
             }
 
             // --- Custom CTA Management ---
@@ -794,6 +1116,7 @@
                     audience: targetAudienceSelect.value,
                     outputFormat: selectedOutputFormat,
                     customCta: selectedCtaSelect.value === 'default' ? null : selectedCtaSelect.value,
+                    language: languageSelector.value
                 };
                 
                 await generateContentWithAPI(apiKey, params);
@@ -887,15 +1210,43 @@
                              throw new Error('Tidak ada thread yang dihasilkan.');
                         }
                     } else if (params.outputFormat === 'blog-outline') {
-                        // Assuming AI generates a single outline for now, based on prompt structure
                         if (generatedData.outline) {
-                            threadsContainer.innerHTML = `
-                                <div class="thread-card">
-                                    <h4 class="mb-3">Outline Blog Post</h4>
-                                    <div class="prompt-item editable-content" contenteditable="true">${generatedData.outline.replace(/\n/g, '<br>')}</div>
-                                    <button class="btn btn-sm btn-outline-primary mt-3" onclick="copyToClipboard(document.querySelector('.thread-card .prompt-item.editable-content').innerText)"><i class="bi bi-clipboard me-1"></i> Salin Outline</button>
-                                </div>
-                            `;
+                            const card = document.createElement('div');
+                            card.className = 'thread-card';
+
+                            const header = document.createElement('h4');
+                            header.className = 'mb-3 d-flex justify-content-between align-items-center';
+                            header.textContent = 'Outline Blog Post';
+
+                            const controlsDiv = document.createElement('div');
+                            controlsDiv.className = 'd-flex align-items-center';
+
+                            const actionButtons = createActionButtons(generatedData, null, 'blog-outline', `outline-${selectedTopic}`);
+                            controlsDiv.appendChild(actionButtons);
+
+                            const analysisBtn = document.createElement('button');
+                            analysisBtn.className = 'btn btn-sm btn-outline-info ms-2';
+                            analysisBtn.innerHTML = '<i class="bi bi-bar-chart-line-fill"></i>';
+                            analysisBtn.title = 'Tampilkan Analisis';
+                            controlsDiv.appendChild(analysisBtn);
+                            header.appendChild(controlsDiv);
+
+                            const content = document.createElement('div');
+                            content.className = 'prompt-item editable-content';
+                            content.setAttribute('contenteditable', 'true');
+                            content.innerHTML = generatedData.outline.replace(/\n/g, '<br>');
+
+                            const analysisData = analyzeText(generatedData.outline, specificKeywordsInput.value);
+                            const analysisElement = createAnalysisElement(analysisData);
+                            analysisBtn.addEventListener('click', () => {
+                                analysisElement.style.display = analysisElement.style.display === 'none' ? 'block' : 'none';
+                            });
+
+                            card.appendChild(header);
+                            card.appendChild(content);
+                            card.appendChild(analysisElement);
+                            threadsContainer.appendChild(card);
+
                             previewMainContent = generatedData.outline;
                             allImagePrompts.push(buildImagePromptFromContent(generatedData.outline, params.topic, params.keywords, 'blog-outline'));
                         } else {
@@ -904,14 +1255,42 @@
                     } else if (params.outputFormat === 'caption') {
                         if (generatedData.captions && generatedData.captions.length > 0) {
                             generatedData.captions.forEach((caption, index) => {
-                                const captionDiv = document.createElement('div');
-                                captionDiv.className = 'thread-card'; // Reuse style
-                                captionDiv.innerHTML = `
-                                    <h4 class="mb-3">Caption Singkat ${index + 1}</h4>
-                                    <div class="prompt-item editable-content" contenteditable="true">${caption.replace(/\n/g, '<br>')}</div>
-                                    <button class="btn btn-sm btn-outline-primary mt-3" onclick="copyToClipboard(this.previousElementSibling.innerText)"><i class="bi bi-clipboard me-1"></i> Salin Caption</button>
-                                `;
-                                threadsContainer.appendChild(captionDiv);
+                                const card = document.createElement('div');
+                                card.className = 'thread-card';
+
+                                const header = document.createElement('h4');
+                                header.className = 'mb-3 d-flex justify-content-between align-items-center';
+                                header.textContent = `Caption Singkat ${index + 1}`;
+
+                                const controlsDiv = document.createElement('div');
+                                controlsDiv.className = 'd-flex align-items-center';
+
+                                const actionButtons = createActionButtons(caption, null, 'caption', `caption-${index + 1}-${selectedTopic}`);
+                                controlsDiv.appendChild(actionButtons);
+
+                                const analysisBtn = document.createElement('button');
+                                analysisBtn.className = 'btn btn-sm btn-outline-info ms-2';
+                                analysisBtn.innerHTML = '<i class="bi bi-bar-chart-line-fill"></i>';
+                                analysisBtn.title = 'Tampilkan Analisis';
+                                controlsDiv.appendChild(analysisBtn);
+                                header.appendChild(controlsDiv);
+
+                                const content = document.createElement('div');
+                                content.className = 'prompt-item editable-content';
+                                content.setAttribute('contenteditable', 'true');
+                                content.innerHTML = caption.replace(/\n/g, '<br>');
+
+                                const analysisData = analyzeText(caption, specificKeywordsInput.value);
+                                const analysisElement = createAnalysisElement(analysisData);
+                                analysisBtn.addEventListener('click', () => {
+                                    analysisElement.style.display = analysisElement.style.display === 'none' ? 'block' : 'none';
+                                });
+
+                                card.appendChild(header);
+                                card.appendChild(content);
+                                card.appendChild(analysisElement);
+                                threadsContainer.appendChild(card);
+
                                 allImagePrompts.push(buildImagePromptFromContent(caption, params.topic, params.keywords, 'caption'));
                             });
                             previewMainContent = generatedData.captions[0]; // Show first caption in preview
@@ -977,9 +1356,10 @@
 
             // --- Prompt Builders ---
             function buildThreadPrompt(params) {
-                const { topic, keywords, tone, numThreads, audience } = params;
+                const { topic, keywords, tone, numThreads, audience, language } = params;
                 const keywordPhrase = keywords ? ` tentang "${keywords}"` : '';
                 const audiencePhrase = audience !== 'umum' ? ` untuk ${audience}` : '';
+                const languageInstruction = `\n\nIMPORTANT: The JSON structure, including all keys like "threads", "hook", and "prompts", must remain in English. However, the string values for these keys (the actual content) must be written in ${language}.`;
 
                 return `Buat ${numThreads} thread unik berupa teks saja (tanpa em-dash maupun emoji), dengan gaya bahasa ${tone} dan target audiens ${audiencePhrase}. Topik utamanya adalah ${topic}${keywordPhrase}.
                 
@@ -1000,13 +1380,14 @@
                     ]
                 }
                 
-                Pastikan respons dalam format JSON yang valid dan mudah diparse.`;
+                Pastikan respons dalam format JSON yang valid dan mudah diparse.${languageInstruction}`;
             }
 
             function buildBlogOutlinePrompt(params) {
-                const { topic, keywords, tone, audience, numThreads } = params;
+                const { topic, keywords, tone, audience, language } = params;
                 const keywordPhrase = keywords ? ` dengan fokus "${keywords}"` : '';
                 const audiencePhrase = audience !== 'umum' ? ` untuk audiens ${audience}` : '';
+                const languageInstruction = `\n\nIMPORTANT: The JSON structure, including the key "outline", must remain in English. However, the string value for this key (the actual content) must be written in ${language}.`;
 
                 // Untuk outline, umumnya 1 saja. Jika ingin beberapa variasi, struktur JSON perlu diubah
                 // dan AI diminta untuk menghasilkan beberapa objek outline. Untuk simplicity, asumsikan 1 outline.
@@ -1023,13 +1404,14 @@
                     "outline": "Judul Blog Post: [Judul Anda]\\n\\nI. Pendahuluan\\n   A. Hook awal\\n   B. Pentingnya topik\\nII. Poin Utama 1\\n   A. Sub-poin 1.1\\n   B. Sub-poin 1.2\\nIII. Poin Utama 2\\n   ...\\nIV. Kesimpulan\\n   A. Ringkasan poin utama\\n   B. Call-to-Action"
                 }
                 
-                Gunakan format teks polos dengan baris baru (\\n) untuk setiap poin. Pastikan respons dalam format JSON yang valid.`;
+                Gunakan format teks polos dengan baris baru (\\n) untuk setiap poin. Pastikan respons dalam format JSON yang valid.${languageInstruction}`;
             }
 
             function buildCaptionPrompt(params) {
-                const { topic, keywords, tone, numThreads, audience } = params;
+                const { topic, keywords, tone, numThreads, audience, language } = params;
                 const keywordPhrase = keywords ? ` terkait "${keywords}"` : '';
                 const audiencePhrase = audience !== 'umum' ? ` untuk audiens ${audience}` : '';
+                const languageInstruction = `\n\nIMPORTANT: The JSON structure, including the key "captions", must remain in English. However, the string values in the array (the actual content) must be written in ${language}.`;
 
                 return `Buat ${numThreads} caption media sosial yang singkat dan menarik, dengan gaya bahasa ${tone} dan target audiens ${audiencePhrase}. Topiknya adalah "${topic}"${keywordPhrase}.
                 
@@ -1045,7 +1427,7 @@
                     "captions": ["Caption 1", "Caption 2", "Caption 3"] // Ulangi sejumlah numThreads
                 }
                 
-                Pastikan respons dalam format JSON yang valid.`;
+                Pastikan respons dalam format JSON yang valid.${languageInstruction}`;
             }
 
             // --- Thread / Content Rendering ---
@@ -1060,21 +1442,35 @@
                 headerTitle.textContent = `Thread ${index + 1}`;
                 header.appendChild(headerTitle);
 
-                // Add Salin Semua button for the thread (only for current generation)
+                const controlsDiv = document.createElement('div');
+                controlsDiv.className = 'd-flex align-items-center';
+
                 if (!isHistory) {
-                    const copyAllBtn = document.createElement('button');
-                    copyAllBtn.className = 'btn btn-sm btn-outline-secondary ms-3';
-                    copyAllBtn.innerHTML = '<i class="bi bi-clipboard me-1"></i> Salin Semua';
-                    copyAllBtn.addEventListener('click', function() {
-                        let fullThreadText = threadData.hook + '\n\n';
-                        threadData.prompts.forEach(p => {
-                            fullThreadText += `${p}\n`; // Prompts already start with bullet from AI
-                        });
-                        fullThreadText += `\n${ctaText}`;
-                        copyToClipboard(fullThreadText);
+                    const actionButtons = createActionButtons(
+                        threadData,
+                        ctaText,
+                        'thread',
+                        `thread-${index + 1}-${selectedTopic}`
+                    );
+                    controlsDiv.appendChild(actionButtons);
+
+                    const analysisBtn = document.createElement('button');
+                    analysisBtn.className = 'btn btn-sm btn-outline-info ms-2';
+                    analysisBtn.innerHTML = '<i class="bi bi-bar-chart-line-fill"></i>';
+                    analysisBtn.title = 'Tampilkan Analisis';
+                    controlsDiv.appendChild(analysisBtn);
+
+                    const fullText = `${threadData.hook}\n\n${threadData.prompts.join('\n')}\n\n${ctaText}`;
+                    const analysisData = analyzeText(fullText, specificKeywordsInput.value);
+                    const analysisElement = createAnalysisElement(analysisData);
+                    threadCard.appendChild(analysisElement);
+
+                    analysisBtn.addEventListener('click', () => {
+                        analysisElement.style.display = analysisElement.style.display === 'none' ? 'block' : 'none';
                     });
-                    header.appendChild(copyAllBtn);
                 }
+                header.appendChild(controlsDiv);
+
 
                 const hook = document.createElement('div');
                 hook.className = 'prompt-item';
@@ -1484,14 +1880,42 @@
                     const outlinesToDisplay = sampleOutlines.slice(0, numContents);
                     
                     outlinesToDisplay.forEach((outlineText, index) => {
-                        threadsContainer.innerHTML += `
-                            <div class="thread-card mb-3">
-                                <h4 class="mb-3">Outline Blog Post ${index + 1}</h4>
-                                <div class="prompt-item editable-content" contenteditable="true">${outlineText.replace(/\n/g, '<br>')}</div>
-                                <button class="btn btn-sm btn-outline-primary mt-3" onclick="copyToClipboard(this.previousElementSibling.innerText)"><i class="bi bi-clipboard me-1"></i> Salin Outline</button>
-                            </div>
-                        `;
-                        // Only generate image prompt for the first outline for preview simplicity
+                        const card = document.createElement('div');
+                        card.className = 'thread-card mb-3';
+
+                        const header = document.createElement('h4');
+                        header.className = 'mb-3 d-flex justify-content-between align-items-center';
+                        header.textContent = `Outline Blog Post ${index + 1}`;
+
+                        const controlsDiv = document.createElement('div');
+                        controlsDiv.className = 'd-flex align-items-center';
+
+                        const actionButtons = createActionButtons({ outline: outlineText }, null, 'blog-outline', `sample-outline-${index + 1}-${topic}`);
+                        controlsDiv.appendChild(actionButtons);
+
+                        const analysisBtn = document.createElement('button');
+                        analysisBtn.className = 'btn btn-sm btn-outline-info ms-2';
+                        analysisBtn.innerHTML = '<i class="bi bi-bar-chart-line-fill"></i>';
+                        analysisBtn.title = 'Tampilkan Analisis';
+                        controlsDiv.appendChild(analysisBtn);
+                        header.appendChild(controlsDiv);
+
+                        const content = document.createElement('div');
+                        content.className = 'prompt-item editable-content';
+                        content.setAttribute('contenteditable', 'true');
+                        content.innerHTML = outlineText.replace(/\n/g, '<br>');
+
+                        const analysisData = analyzeText(outlineText, specificKeywordsInput.value);
+                        const analysisElement = createAnalysisElement(analysisData);
+                        analysisBtn.addEventListener('click', () => {
+                            analysisElement.style.display = analysisElement.style.display === 'none' ? 'block' : 'none';
+                        });
+
+                        card.appendChild(header);
+                        card.appendChild(content);
+                        card.appendChild(analysisElement);
+                        threadsContainer.appendChild(card);
+
                         if (index === 0) {
                             previewMainContent = outlineText;
                             sampleImagePrompts.push(buildImagePromptFromContent(outlineText, topic, specificKeywordsInput.value.trim(), 'blog-outline'));
@@ -1510,14 +1934,42 @@
                     const captionsToDisplay = allSampleCaptions.slice(0, numContents); // Use numContents here
 
                     captionsToDisplay.forEach((caption, index) => {
-                        const captionDiv = document.createElement('div');
-                        captionDiv.className = 'thread-card'; // Reuse style
-                        captionDiv.innerHTML = `
-                            <h4 class="mb-3">Caption Singkat ${index + 1}</h4>
-                            <div class="prompt-item editable-content" contenteditable="true">${caption.replace(/\n/g, '<br>')}</div>
-                            <button class="btn btn-sm btn-outline-primary mt-3" onclick="copyToClipboard(this.previousElementSibling.innerText)"><i class="bi bi-clipboard me-1"></i> Salin Caption</button>
-                        `;
-                        threadsContainer.appendChild(captionDiv);
+                        const card = document.createElement('div');
+                        card.className = 'thread-card';
+
+                        const header = document.createElement('h4');
+                        header.className = 'mb-3 d-flex justify-content-between align-items-center';
+                        header.textContent = `Caption Singkat ${index + 1}`;
+
+                        const controlsDiv = document.createElement('div');
+                        controlsDiv.className = 'd-flex align-items-center';
+
+                        const actionButtons = createActionButtons(caption, null, 'caption', `sample-caption-${index + 1}-${topic}`);
+                        controlsDiv.appendChild(actionButtons);
+
+                        const analysisBtn = document.createElement('button');
+                        analysisBtn.className = 'btn btn-sm btn-outline-info ms-2';
+                        analysisBtn.innerHTML = '<i class="bi bi-bar-chart-line-fill"></i>';
+                        analysisBtn.title = 'Tampilkan Analisis';
+                        controlsDiv.appendChild(analysisBtn);
+                        header.appendChild(controlsDiv);
+
+                        const content = document.createElement('div');
+                        content.className = 'prompt-item editable-content';
+                        content.setAttribute('contenteditable', 'true');
+                        content.innerHTML = caption.replace(/\n/g, '<br>');
+
+                        const analysisData = analyzeText(caption, specificKeywordsInput.value);
+                        const analysisElement = createAnalysisElement(analysisData);
+                        analysisBtn.addEventListener('click', () => {
+                            analysisElement.style.display = analysisElement.style.display === 'none' ? 'block' : 'none';
+                        });
+
+                        card.appendChild(header);
+                        card.appendChild(content);
+                        card.appendChild(analysisElement);
+                        threadsContainer.appendChild(card);
+
                         sampleImagePrompts.push(buildImagePromptFromContent(caption, topic, specificKeywordsInput.value.trim(), 'caption'));
                     });
                     if (captionsToDisplay.length > 0) {
