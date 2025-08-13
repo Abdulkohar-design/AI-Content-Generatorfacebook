@@ -490,6 +490,25 @@
             let generatedContentHistory = [];
             let personas = {};
 
+            const promptTemplates = {
+                'Indonesian': {
+                    thread: `Buat {numThreads} thread unik berupa teks saja (tanpa em-dash maupun emoji), dengan gaya bahasa {tone} dan target audiens {audience}. Topik utamanya adalah {topic}{keywordPhrase}.\n\nSetiap thread harus:\n1. Diawali dengan kalimat hook yang menarik.\n2. Berisi 7 tips, tutorial, atau cara praktis.\n3. Setiap tips diawali dengan bullet point (•) dan tidak terlalu panjang.\n\nFormat respons JSON:\n{\n    "threads": [\n        {\n            "hook": "Kalimat hook yang menarik",\n            "prompts": ["Tips 1", "Tips 2", ...]\n        }\n    ]\n}\n\nPastikan respons dalam format JSON yang valid dan mudah diparse.`,
+                    blog_outline: `Buat outline (kerangka) blog post yang detail dan komprehensif, dengan gaya bahasa {tone} untuk audiens {audience}. Topiknya adalah "{topic}"{keywordPhrase}.\n\nOutline harus mencakup:\n- Judul yang menarik\n- Pendahuluan (dengan hook)\n- Beberapa poin utama (dengan sub-poin jika perlu)\n- Kesimpulan (dengan Call-to-Action)\n\nFormat respons JSON:\n{\n    "outline": "Judul Blog Post: [Judul Anda]..."\n}\n\nGunakan format teks polos dengan baris baru (\\n) untuk setiap poin. Pastikan respons dalam format JSON yang valid.`,
+                    caption: `Buat {numThreads} caption media sosial yang singkat dan menarik, dengan gaya bahasa {tone} dan target audiens {audience}. Topiknya adalah "{topic}"{keywordPhrase}.\n\nSetiap caption harus:\n1. Maksimal 150 kata.\n2. Mengandung satu atau dua kalimat pembuka yang menarik.\n3. Beberapa poin singkat atau ajakan bertindak.\n4. Menggunakan maksimal 5 hashtag yang relevan.\n5. Tanpa emoji atau em-dash.\n\nFormat respons JSON:\n{\n    "captions": ["Caption 1", "Caption 2", ...]\n}\n\nPastikan respons dalam format JSON yang valid.`
+                },
+                'English': {
+                    thread: `Create {numThreads} unique text-only threads (no em-dashes or emojis), in a {tone} style for a {audience} audience. The main topic is {topic}{keywordPhrase}.\n\nEach thread must:\n1. Start with a compelling hook sentence.\n2. Contain 7 practical tips, tutorials, or methods.\n3. Each tip must start with a bullet point (•) and be concise.\n\nJSON response format:\n{\n    "threads": [\n        {\n            "hook": "A compelling hook sentence",\n            "prompts": ["Tip 1", "Tip 2", ...]\n        }\n    ]\n}\n\nEnsure the response is a valid, parsable JSON.`,
+                    blog_outline: `Create a detailed and comprehensive blog post outline, in a {tone} style for a {audience} audience. The topic is "{topic}"{keywordPhrase}.\n\nThe outline must include:\n- A catchy title\n- An introduction (with a hook)\n- Several main points (with sub-points if necessary)\n- A conclusion (with a Call-to-Action)\n\nJSON response format:\n{\n    "outline": "Blog Post Title: [Your Title]..."\n}\n\nUse plain text with newlines (\\n) for each point. Ensure the response is a valid JSON.`,
+                    caption: `Create {numThreads} short and engaging social media captions, in a {tone} style for a {audience} audience. The topic is "{topic}"{keywordPhrase}.\n\nEach caption must:\n1. Be a maximum of 150 words.\n2. Contain one or two interesting opening sentences.\n3. Include a few brief points or a call to action.\n4. Use a maximum of 5 relevant hashtags.\n5. No emojis or em-dashes.\n\nJSON response format:\n{\n    "captions": ["Caption 1", "Caption 2", ...]\n}\n\nEnsure the response is a valid JSON.`
+                },
+                'Spanish': {
+                    thread: `Crea {numThreads} hilos de texto únicos (sin guiones largos ni emojis), en un estilo {tone} para una audiencia de {audience}. El tema principal es {topic}{keywordPhrase}.\n\nCada hilo debe:\n1. Empezar con una frase de gancho convincente.\n2. Contener 7 consejos prácticos, tutoriales o métodos.\n3. Cada consejo debe comenzar con un punto (•) y ser conciso.\n\nFormato de respuesta JSON:\n{\n    "threads": [\n        {\n            "hook": "Una frase de gancho convincente",\n            "prompts": ["Consejo 1", "Consejo 2", ...]\n        }\n    ]\n}\n\nAsegúrate de que la respuesta sea un JSON válido y analizable.`,
+                    blog_outline: `Crea un esquema de publicación de blog detallado y completo, en un estilo {tone} para una audiencia de {audience}. El tema es "{topic}"{keywordPhrase}.\n\nEl esquema debe incluir:\n- Un título atractivo\n- Una introducción (con un gancho)\n- Varios puntos principales (con subpuntos si es necesario)\n- Una conclusión (con una llamada a la acción)\n\nFormato de respuesta JSON:\n{\n    "outline": "Título de la Publicación: [Tu Título]..."\n}\n\nUsa texto sin formato con saltos de línea (\\n) para cada punto. Asegúrate de que la respuesta sea un JSON válido.`,
+                    caption: `Crea {numThreads} leyendas de redes sociales cortas y atractivas, en un estilo {tone} para una audiencia de {audience}. El tema es "{topic}"{keywordPhrase}.\n\nCada leyenda debe:\n1. Tener un máximo de 150 palabras.\n2. Contener una o dos frases de apertura interesantes.\n3. Incluir algunos puntos breves o una llamada a la acción.\n4. Usar un máximo de 5 hashtags relevantes.\n5. Sin emojis ni guiones largos.\n\nFormato de respuesta JSON:\n{\n    "captions": ["Leyenda 1", "Leyenda 2", ...]\n}\n\nAsegúrate de que la respuesta sea un JSON válido.`
+                }
+                // Other languages can be added here following the same structure.
+            };
+
             // --- UI Elements Cache ---
             const apiKeyInput = document.getElementById('apiKey');
             const saveApiKeyBtn = document.getElementById('saveApiKey');
@@ -1359,75 +1378,44 @@
                 const { topic, keywords, tone, numThreads, audience, language } = params;
                 const keywordPhrase = keywords ? ` tentang "${keywords}"` : '';
                 const audiencePhrase = audience !== 'umum' ? ` untuk ${audience}` : '';
-                const languageInstruction = `\n\nIMPORTANT: The JSON structure, including all keys like "threads", "hook", and "prompts", must remain in English. However, the string values for these keys (the actual content) must be written in ${language}.`;
+                
+                const template = promptTemplates[language]?.thread || promptTemplates['English'].thread;
 
-                return `Buat ${numThreads} thread unik berupa teks saja (tanpa em-dash maupun emoji), dengan gaya bahasa ${tone} dan target audiens ${audiencePhrase}. Topik utamanya adalah ${topic}${keywordPhrase}.
-                
-                Setiap thread harus:
-                1. Diawali dengan kalimat hook yang menarik.
-                2. Berisi 7 tips, tutorial, atau cara praktis.
-                3. Setiap tips diawali dengan bullet point (•) dan tidak terlalu panjang.
-                
-                Format respons JSON:
-                {
-                    "threads": [
-                        {
-                            "hook": "Kalimat hook yang menarik",
-                            "prompts": ["Tips 1", "Tips 2", ...]
-                        },
-                        {...},
-                        {...} // Ulangi sejumlah numThreads
-                    ]
-                }
-                
-                Pastikan respons dalam format JSON yang valid dan mudah diparse.${languageInstruction}`;
+                return template
+                    .replace(/{numThreads}/g, numThreads)
+                    .replace(/{tone}/g, tone)
+                    .replace(/{audience}/g, audiencePhrase)
+                    .replace(/{topic}/g, topic)
+                    .replace(/{keywordPhrase}/g, keywordPhrase);
             }
 
             function buildBlogOutlinePrompt(params) {
                 const { topic, keywords, tone, audience, language } = params;
                 const keywordPhrase = keywords ? ` dengan fokus "${keywords}"` : '';
                 const audiencePhrase = audience !== 'umum' ? ` untuk audiens ${audience}` : '';
-                const languageInstruction = `\n\nIMPORTANT: The JSON structure, including the key "outline", must remain in English. However, the string value for this key (the actual content) must be written in ${language}.`;
 
-                // Untuk outline, umumnya 1 saja. Jika ingin beberapa variasi, struktur JSON perlu diubah
-                // dan AI diminta untuk menghasilkan beberapa objek outline. Untuk simplicity, asumsikan 1 outline.
-                return `Buat outline (kerangka) blog post yang detail dan komprehensif, dengan gaya bahasa ${tone}${audiencePhrase}. Topiknya adalah "${topic}"${keywordPhrase}.
-                
-                Outline harus mencakup:
-                - Judul yang menarik
-                - Pendahuluan (dengan hook)
-                - Beberapa poin utama (dengan sub-poin jika perlu)
-                - Kesimpulan (dengan Call-to-Action)
-                
-                Format respons JSON:
-                {
-                    "outline": "Judul Blog Post: [Judul Anda]\\n\\nI. Pendahuluan\\n   A. Hook awal\\n   B. Pentingnya topik\\nII. Poin Utama 1\\n   A. Sub-poin 1.1\\n   B. Sub-poin 1.2\\nIII. Poin Utama 2\\n   ...\\nIV. Kesimpulan\\n   A. Ringkasan poin utama\\n   B. Call-to-Action"
-                }
-                
-                Gunakan format teks polos dengan baris baru (\\n) untuk setiap poin. Pastikan respons dalam format JSON yang valid.${languageInstruction}`;
+                const template = promptTemplates[language]?.blog_outline || promptTemplates['English'].blog_outline;
+
+                return template
+                    .replace(/{tone}/g, tone)
+                    .replace(/{audience}/g, audiencePhrase)
+                    .replace(/{topic}/g, topic)
+                    .replace(/{keywordPhrase}/g, keywordPhrase);
             }
 
             function buildCaptionPrompt(params) {
                 const { topic, keywords, tone, numThreads, audience, language } = params;
                 const keywordPhrase = keywords ? ` terkait "${keywords}"` : '';
                 const audiencePhrase = audience !== 'umum' ? ` untuk audiens ${audience}` : '';
-                const languageInstruction = `\n\nIMPORTANT: The JSON structure, including the key "captions", must remain in English. However, the string values in the array (the actual content) must be written in ${language}.`;
 
-                return `Buat ${numThreads} caption media sosial yang singkat dan menarik, dengan gaya bahasa ${tone} dan target audiens ${audiencePhrase}. Topiknya adalah "${topic}"${keywordPhrase}.
-                
-                Setiap caption harus:
-                1. Maksimal 150 kata.
-                2. Mengandung satu atau dua kalimat pembuka yang menarik.
-                3. Beberapa poin singkat atau ajakan bertindak.
-                4. Menggunakan maksimal 5 hashtag yang relevan.
-                5. Tanpa emoji atau em-dash.
-                
-                Format respons JSON:
-                {
-                    "captions": ["Caption 1", "Caption 2", "Caption 3"] // Ulangi sejumlah numThreads
-                }
-                
-                Pastikan respons dalam format JSON yang valid.${languageInstruction}`;
+                const template = promptTemplates[language]?.caption || promptTemplates['English'].caption;
+
+                return template
+                    .replace(/{numThreads}/g, numThreads)
+                    .replace(/{tone}/g, tone)
+                    .replace(/{audience}/g, audiencePhrase)
+                    .replace(/{topic}/g, topic)
+                    .replace(/{keywordPhrase}/g, keywordPhrase);
             }
 
             // --- Thread / Content Rendering ---
