@@ -1308,6 +1308,283 @@
             font-weight: 600;
             z-index: 10;
         }
+
+        /* Calendar Styles */
+        .calendar-grid {
+            background: var(--card-bg, white);
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: var(--shadow-sm);
+        }
+
+        .calendar-header {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            background: var(--gradient-primary);
+            color: white;
+            padding: 1rem 0;
+            font-weight: 600;
+            text-align: center;
+        }
+
+        .calendar-day-name {
+            padding: 0.5rem;
+            font-size: 0.9rem;
+        }
+
+        .calendar-days {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            gap: 1px;
+            background: var(--border-color, #e9ecef);
+        }
+
+        .calendar-day {
+            background: var(--card-bg, white);
+            min-height: 100px;
+            padding: 0.5rem;
+            position: relative;
+            cursor: pointer;
+            transition: var(--transition);
+        }
+
+        .calendar-day:hover {
+            background: rgba(106, 17, 203, 0.05);
+        }
+
+        .calendar-day.other-month {
+            opacity: 0.4;
+        }
+
+        .calendar-day.today {
+            background: rgba(106, 17, 203, 0.1);
+            border: 2px solid var(--primary-color);
+        }
+
+        .calendar-day.selected {
+            background: rgba(37, 117, 252, 0.15);
+            border: 2px solid var(--secondary-color);
+        }
+
+        .calendar-day-number {
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+            color: var(--dark-color);
+        }
+
+        .calendar-event {
+            font-size: 0.7rem;
+            padding: 0.2rem 0.3rem;
+            margin-bottom: 0.2rem;
+            border-radius: 4px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+
+        .calendar-event.scheduled {
+            background: var(--primary-color);
+            color: white;
+        }
+
+        .calendar-event.published {
+            background: var(--success-color);
+            color: white;
+        }
+
+        .calendar-event.draft {
+            background: var(--warning-color);
+            color: white;
+        }
+
+        .calendar-event.generated {
+            background: var(--info-color);
+            color: white;
+        }
+
+        /* Schedule List Styles */
+        .schedule-list {
+            max-height: 500px;
+            overflow-y: auto;
+        }
+
+        .schedule-item {
+            background: var(--card-bg, white);
+            border: 1px solid var(--border-color, #e9ecef);
+            border-radius: 12px;
+            padding: 1rem;
+            margin-bottom: 1rem;
+            transition: var(--transition);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .schedule-item::before {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 0;
+            width: 4px;
+            height: 100%;
+            background: var(--gradient-primary);
+        }
+
+        .schedule-item:hover {
+            transform: translateX(5px);
+            box-shadow: var(--shadow-md);
+        }
+
+        .schedule-item.draft::before {
+            background: var(--warning-color);
+        }
+
+        .schedule-item.published::before {
+            background: var(--success-color);
+        }
+
+        .schedule-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: start;
+            margin-bottom: 0.75rem;
+        }
+
+        .schedule-title {
+            font-weight: 600;
+            color: var(--dark-color);
+            margin-bottom: 0.25rem;
+        }
+
+        .schedule-meta {
+            font-size: 0.875rem;
+            color: var(--secondary-color);
+            display: flex;
+            gap: 1rem;
+            flex-wrap: wrap;
+        }
+
+        .schedule-meta i {
+            margin-right: 0.25rem;
+        }
+
+        .schedule-content {
+            font-size: 0.9rem;
+            color: var(--text-color, #343a40);
+            margin-bottom: 0.75rem;
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+        }
+
+        .schedule-actions {
+            display: flex;
+            gap: 0.5rem;
+        }
+
+        .schedule-actions .btn {
+            padding: 0.25rem 0.75rem;
+            font-size: 0.875rem;
+        }
+
+        .platform-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.25rem;
+            padding: 0.25rem 0.75rem;
+            border-radius: 20px;
+            font-size: 0.75rem;
+            font-weight: 500;
+            background: rgba(106, 17, 203, 0.1);
+            color: var(--primary-color);
+        }
+
+        .platform-badge.facebook { background: rgba(24, 119, 242, 0.1); color: #1877F2; }
+        .platform-badge.instagram { background: rgba(225, 48, 108, 0.1); color: #E1306C; }
+        .platform-badge.twitter { background: rgba(29, 155, 240, 0.1); color: #1DA1F2; }
+        .platform-badge.linkedin { background: rgba(0, 119, 181, 0.1); color: #0077B5; }
+        .platform-badge.tiktok { background: rgba(0, 0, 0, 0.1); color: #000; }
+
+        /* Mobile Responsiveness for Calendar */
+        @media (max-width: 768px) {
+            .calendar-day {
+                min-height: 80px;
+                font-size: 0.85rem;
+            }
+
+            .calendar-day-number {
+                font-size: 0.9rem;
+            }
+
+            .calendar-event {
+                font-size: 0.65rem;
+                padding: 0.15rem 0.25rem;
+            }
+
+            .schedule-item {
+                padding: 0.75rem;
+            }
+
+            .schedule-meta {
+                flex-direction: column;
+                gap: 0.5rem;
+            }
+        }
+
+        /* Enhanced Glassmorphism Effects */
+        .glass-card {
+            background: rgba(255, 255, 255, 0.7);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.15);
+        }
+
+        [data-theme="dark"] .glass-card {
+            background: rgba(22, 33, 62, 0.7);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        /* Improved Button Animations */
+        .btn-animated {
+            position: relative;
+            overflow: hidden;
+            z-index: 1;
+        }
+
+        .btn-animated::after {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 0;
+            height: 0;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.3);
+            transform: translate(-50%, -50%);
+            transition: width 0.6s, height 0.6s;
+        }
+
+        .btn-animated:hover::after {
+            width: 300px;
+            height: 300px;
+        }
+
+        /* Pulse Animation for New Features */
+        @keyframes pulse-glow {
+            0% {
+                box-shadow: 0 0 0 0 rgba(106, 17, 203, 0.7);
+            }
+            70% {
+                box-shadow: 0 0 0 10px rgba(106, 17, 203, 0);
+            }
+            100% {
+                box-shadow: 0 0 0 0 rgba(106, 17, 203, 0);
+            }
+        }
+
+        .pulse-glow {
+            animation: pulse-glow 2s infinite;
+        }
     </style>
 </head>
 <body>
@@ -1365,6 +1642,21 @@
             <li class="nav-item" role="presentation">
                 <button class="nav-link" id="history-tab" data-bs-toggle="tab" data-bs-target="#history" type="button" role="tab" aria-controls="history" aria-selected="false">
                     <i class="bi bi-clock-history me-2"></i>Riwayat
+                </button>
+            </li>
+            <li class="nav-item" role="presentation">
+                <button class="nav-link" id="scheduler-tab" data-bs-toggle="tab" data-bs-target="#scheduler" type="button" role="tab" aria-controls="scheduler" aria-selected="false">
+                    <i class="bi bi-calendar-check me-2"></i>Penjadwalan
+                </button>
+            </li>
+            <li class="nav-item" role="presentation">
+                <button class="nav-link" id="optimizer-tab" data-bs-toggle="tab" data-bs-target="#optimizer" type="button" role="tab" aria-controls="optimizer" aria-selected="false">
+                    <i class="bi bi-stars me-2"></i>AI Optimizer
+                </button>
+            </li>
+            <li class="nav-item" role="presentation">
+                <button class="nav-link" id="calendar-tab" data-bs-toggle="tab" data-bs-target="#calendar" type="button" role="tab" aria-controls="calendar" aria-selected="false">
+                    <i class="bi bi-calendar3 me-2"></i>Kalender Konten
                 </button>
             </li>
             <li class="nav-item" role="presentation">
@@ -1871,6 +2163,399 @@
                                 <!-- Pagination items will be loaded here -->
                             </ul>
                         </nav>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Scheduler Tab -->
+            <div class="tab-pane fade" id="scheduler" role="tabpanel" aria-labelledby="scheduler-tab">
+                <div class="card">
+                    <div class="card-header">
+                        <h4 class="card-title"><i class="bi bi-calendar-check me-2"></i>Penjadwalan Konten</h4>
+                        <p class="mb-0 small text-muted">Jadwalkan konten Anda untuk dipublikasikan di waktu yang optimal</p>
+                    </div>
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-lg-8 mb-4">
+                                <!-- Quick Schedule Form -->
+                                <div class="card border-0 shadow-sm">
+                                    <div class="card-body">
+                                        <h5 class="mb-3"><i class="bi bi-plus-circle me-2"></i>Buat Jadwal Baru</h5>
+                                        <div class="mb-3">
+                                            <label class="form-label">Pilih Konten</label>
+                                            <select class="form-select" id="scheduleContentSelect">
+                                                <option value="">Pilih dari riwayat...</option>
+                                            </select>
+                                        </div>
+                                        <div class="row">
+                                            <div class="col-md-6 mb-3">
+                                                <label class="form-label">Platform</label>
+                                                <select class="form-select" id="schedulePlatform">
+                                                    <option value="facebook">Facebook</option>
+                                                    <option value="instagram">Instagram</option>
+                                                    <option value="twitter">Twitter/X</option>
+                                                    <option value="linkedin">LinkedIn</option>
+                                                    <option value="tiktok">TikTok</option>
+                                                </select>
+                                            </div>
+                                            <div class="col-md-6 mb-3">
+                                                <label class="form-label">Status</label>
+                                                <select class="form-select" id="scheduleStatus">
+                                                    <option value="draft">Draft</option>
+                                                    <option value="scheduled">Terjadwal</option>
+                                                    <option value="published">Dipublikasi</option>
+                                                </select>
+                                            </div>
+                                        </div>
+                                        <div class="row">
+                                            <div class="col-md-6 mb-3">
+                                                <label class="form-label">Tanggal</label>
+                                                <input type="date" class="form-control" id="scheduleDate">
+                                            </div>
+                                            <div class="col-md-6 mb-3">
+                                                <label class="form-label">Waktu</label>
+                                                <input type="time" class="form-control" id="scheduleTime" value="09:00">
+                                            </div>
+                                        </div>
+                                        <div class="mb-3">
+                                            <label class="form-label">Catatan (Opsional)</label>
+                                            <textarea class="form-control" id="scheduleNote" rows="2" placeholder="Tambahkan catatan untuk jadwal ini..."></textarea>
+                                        </div>
+                                        <button class="btn btn-primary w-100" onclick="addSchedule()">
+                                            <i class="bi bi-calendar-plus me-2"></i>Tambahkan ke Jadwal
+                                        </button>
+                                    </div>
+                                </div>
+
+                                <!-- Scheduled Items List -->
+                                <div class="card border-0 shadow-sm mt-4">
+                                    <div class="card-body">
+                                        <div class="d-flex justify-content-between align-items-center mb-3">
+                                            <h5 class="mb-0"><i class="bi bi-list-task me-2"></i>Daftar Jadwal</h5>
+                                            <div class="btn-group btn-group-sm">
+                                                <button class="btn btn-outline-secondary" onclick="filterSchedule('all')">Semua</button>
+                                                <button class="btn btn-outline-secondary" onclick="filterSchedule('today')">Hari Ini</button>
+                                                <button class="btn btn-outline-secondary" onclick="filterSchedule('week')">Minggu Ini</button>
+                                            </div>
+                                        </div>
+                                        <div id="scheduleList" class="schedule-list">
+                                            <!-- Scheduled items will be loaded here -->
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="col-lg-4">
+                                <!-- Schedule Stats -->
+                                <div class="card border-0 shadow-sm mb-3">
+                                    <div class="card-body text-center">
+                                        <i class="bi bi-calendar-week text-primary" style="font-size: 2rem;"></i>
+                                        <h3 class="mb-0 mt-2" id="scheduleTotalCount">0</h3>
+                                        <small class="text-muted">Total Terjadwal</small>
+                                    </div>
+                                </div>
+                                <div class="card border-0 shadow-sm mb-3">
+                                    <div class="card-body text-center">
+                                        <i class="bi bi-clock text-warning" style="font-size: 2rem;"></i>
+                                        <h3 class="mb-0 mt-2" id="scheduleTodayCount">0</h3>
+                                        <small class="text-muted">Hari Ini</small>
+                                    </div>
+                                </div>
+                                <div class="card border-0 shadow-sm mb-3">
+                                    <div class="card-body text-center">
+                                        <i class="bi bi-check-circle text-success" style="font-size: 2rem;"></i>
+                                        <h3 class="mb-0 mt-2" id="schedulePublishedCount">0</h3>
+                                        <small class="text-muted">Dipublikasi</small>
+                                    </div>
+                                </div>
+
+                                <!-- Optimal Times -->
+                                <div class="card border-0 shadow-sm">
+                                    <div class="card-body">
+                                        <h6 class="mb-3"><i class="bi bi-lightbulb me-2"></i>Waktu Optimal Posting</h6>
+                                        <div class="small">
+                                            <div class="mb-2">
+                                                <strong>Facebook:</strong> 13:00 - 16:00
+                                            </div>
+                                            <div class="mb-2">
+                                                <strong>Instagram:</strong> 11:00 - 13:00
+                                            </div>
+                                            <div class="mb-2">
+                                                <strong>Twitter/X:</strong> 09:00 - 12:00
+                                            </div>
+                                            <div class="mb-2">
+                                                <strong>LinkedIn:</strong> 07:00 - 09:00
+                                            </div>
+                                            <div>
+                                                <strong>TikTok:</strong> 18:00 - 21:00
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Optimizer Tab -->
+            <div class="tab-pane fade" id="optimizer" role="tabpanel" aria-labelledby="optimizer-tab">
+                <div class="card">
+                    <div class="card-header">
+                        <h4 class="card-title"><i class="bi bi-stars me-2"></i>AI Content Optimizer</h4>
+                        <p class="mb-0 small text-muted">Tingkatkan kualitas konten dengan AI-powered optimization</p>
+                    </div>
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-lg-8 mb-4">
+                                <!-- Input Section -->
+                                <div class="card border-0 shadow-sm">
+                                    <div class="card-body">
+                                        <h5 class="mb-3"><i class="bi bi-file-text me-2"></i>Konten yang akan Dioptimalkan</h5>
+                                        <div class="mb-3">
+                                            <label class="form-label">Pilih dari Riwayat atau Paste Konten</label>
+                                            <select class="form-select mb-2" id="optimizerContentSelect" onchange="loadContentToOptimizer()">
+                                                <option value="">Pilih dari riwayat...</option>
+                                            </select>
+                                            <textarea class="form-control" id="optimizerInput" rows="8" placeholder="Atau paste konten Anda di sini..."></textarea>
+                                        </div>
+
+                                        <!-- Optimization Options -->
+                                        <h6 class="mb-3"><i class="bi bi-sliders me-2"></i>Opsi Optimasi</h6>
+                                        <div class="row mb-3">
+                                            <div class="col-md-6 mb-2">
+                                                <div class="form-check">
+                                                    <input class="form-check-input" type="checkbox" id="optGrammar" checked>
+                                                    <label class="form-check-label" for="optGrammar">
+                                                        Perbaiki Tata Bahasa
+                                                    </label>
+                                                </div>
+                                            </div>
+                                            <div class="col-md-6 mb-2">
+                                                <div class="form-check">
+                                                    <input class="form-check-input" type="checkbox" id="optEngagement" checked>
+                                                    <label class="form-check-label" for="optEngagement">
+                                                        Tingkatkan Engagement
+                                                    </label>
+                                                </div>
+                                            </div>
+                                            <div class="col-md-6 mb-2">
+                                                <div class="form-check">
+                                                    <input class="form-check-input" type="checkbox" id="optSEO">
+                                                    <label class="form-check-label" for="optSEO">
+                                                        Optimasi SEO
+                                                    </label>
+                                                </div>
+                                            </div>
+                                            <div class="col-md-6 mb-2">
+                                                <div class="form-check">
+                                                    <input class="form-check-input" type="checkbox" id="optReadability" checked>
+                                                    <label class="form-check-label" for="optReadability">
+                                                        Tingkatkan Readability
+                                                    </label>
+                                                </div>
+                                            </div>
+                                            <div class="col-md-6 mb-2">
+                                                <div class="form-check">
+                                                    <input class="form-check-input" type="checkbox" id="optEmoji">
+                                                    <label class="form-check-label" for="optEmoji">
+                                                        Tambah Emoji
+                                                    </label>
+                                                </div>
+                                            </div>
+                                            <div class="col-md-6 mb-2">
+                                                <div class="form-check">
+                                                    <input class="form-check-input" type="checkbox" id="optCTA">
+                                                    <label class="form-check-label" for="optCTA">
+                                                        Perkuat Call-to-Action
+                                                    </label>
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        <div class="mb-3">
+                                            <label class="form-label">Target Platform</label>
+                                            <select class="form-select" id="optimizerPlatform">
+                                                <option value="general">Umum</option>
+                                                <option value="facebook">Facebook</option>
+                                                <option value="instagram">Instagram</option>
+                                                <option value="twitter">Twitter/X</option>
+                                                <option value="linkedin">LinkedIn</option>
+                                                <option value="blog">Blog Post</option>
+                                            </select>
+                                        </div>
+
+                                        <button class="btn btn-primary btn-lg w-100" onclick="optimizeContent()">
+                                            <i class="bi bi-stars me-2"></i>Optimalkan Konten
+                                        </button>
+                                    </div>
+                                </div>
+
+                                <!-- Result Section -->
+                                <div class="card border-0 shadow-sm mt-4" id="optimizerResult" style="display: none;">
+                                    <div class="card-body">
+                                        <div class="d-flex justify-content-between align-items-center mb-3">
+                                            <h5 class="mb-0"><i class="bi bi-check-circle text-success me-2"></i>Hasil Optimasi</h5>
+                                            <button class="btn btn-sm btn-outline-primary" onclick="copyOptimizedContent()">
+                                                <i class="bi bi-clipboard me-1"></i>Salin
+                                            </button>
+                                        </div>
+                                        <div class="preview-box" id="optimizedContent"></div>
+
+                                        <!-- Comparison -->
+                                        <div class="mt-3">
+                                            <button class="btn btn-sm btn-outline-secondary" onclick="toggleComparison()">
+                                                <i class="bi bi-arrows-expand me-1"></i>Bandingkan dengan Asli
+                                            </button>
+                                        </div>
+                                        <div id="comparisonView" class="mt-3" style="display: none;">
+                                            <div class="row">
+                                                <div class="col-md-6">
+                                                    <h6 class="text-muted">Original</h6>
+                                                    <div class="preview-box bg-light" id="originalComparison"></div>
+                                                </div>
+                                                <div class="col-md-6">
+                                                    <h6 class="text-success">Optimized</h6>
+                                                    <div class="preview-box bg-success bg-opacity-10" id="optimizedComparison"></div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="col-lg-4">
+                                <!-- Content Quality Score -->
+                                <div class="card border-0 shadow-sm mb-3">
+                                    <div class="card-body">
+                                        <h6 class="mb-3"><i class="bi bi-speedometer2 me-2"></i>Skor Kualitas Konten</h6>
+                                        <div class="text-center mb-3">
+                                            <div class="position-relative d-inline-block">
+                                                <svg width="120" height="120">
+                                                    <circle cx="60" cy="60" r="50" fill="none" stroke="#e9ecef" stroke-width="10"/>
+                                                    <circle id="qualityCircle" cx="60" cy="60" r="50" fill="none" stroke="url(#gradient)" stroke-width="10"
+                                                        stroke-dasharray="314" stroke-dashoffset="314" transform="rotate(-90 60 60)"
+                                                        style="transition: stroke-dashoffset 1s ease;"/>
+                                                    <defs>
+                                                        <linearGradient id="gradient" x1="0%" y1="0%" x2="100%" y2="0%">
+                                                            <stop offset="0%" style="stop-color:#6a11cb;stop-opacity:1" />
+                                                            <stop offset="100%" style="stop-color:#2575fc;stop-opacity:1" />
+                                                        </linearGradient>
+                                                    </defs>
+                                                </svg>
+                                                <div class="position-absolute top-50 start-50 translate-middle">
+                                                    <h3 class="mb-0" id="qualityScore">-</h3>
+                                                    <small class="text-muted">/ 100</small>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="small" id="qualityBreakdown">
+                                            <div class="d-flex justify-content-between mb-2">
+                                                <span>Tata Bahasa</span>
+                                                <strong id="grammarScore">-</strong>
+                                            </div>
+                                            <div class="d-flex justify-content-between mb-2">
+                                                <span>Engagement</span>
+                                                <strong id="engagementScore">-</strong>
+                                            </div>
+                                            <div class="d-flex justify-content-between mb-2">
+                                                <span>Readability</span>
+                                                <strong id="readabilityScore">-</strong>
+                                            </div>
+                                            <div class="d-flex justify-content-between mb-2">
+                                                <span>SEO</span>
+                                                <strong id="seoScore">-</strong>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- AI Suggestions -->
+                                <div class="card border-0 shadow-sm">
+                                    <div class="card-body">
+                                        <h6 class="mb-3"><i class="bi bi-lightbulb me-2"></i>Saran AI</h6>
+                                        <div id="aiSuggestions" class="small text-muted">
+                                            Analisis konten untuk mendapatkan saran...
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Calendar Tab -->
+            <div class="tab-pane fade" id="calendar" role="tabpanel" aria-labelledby="calendar-tab">
+                <div class="card">
+                    <div class="card-header">
+                        <h4 class="card-title"><i class="bi bi-calendar3 me-2"></i>Kalender Konten</h4>
+                        <p class="mb-0 small text-muted">Visualisasi konten dan jadwal dalam format kalender</p>
+                    </div>
+                    <div class="card-body">
+                        <!-- Calendar Controls -->
+                        <div class="d-flex justify-content-between align-items-center mb-4">
+                            <div class="btn-group">
+                                <button class="btn btn-outline-primary" onclick="changeMonth(-1)">
+                                    <i class="bi bi-chevron-left"></i>
+                                </button>
+                                <button class="btn btn-outline-primary" id="currentMonth" style="min-width: 200px;"></button>
+                                <button class="btn btn-outline-primary" onclick="changeMonth(1)">
+                                    <i class="bi bi-chevron-right"></i>
+                                </button>
+                            </div>
+                            <div class="btn-group">
+                                <button class="btn btn-sm btn-outline-secondary" onclick="setCalendarView('month')">Bulan</button>
+                                <button class="btn btn-sm btn-outline-secondary" onclick="setCalendarView('week')">Minggu</button>
+                                <button class="btn btn-sm btn-outline-secondary" onclick="goToToday()">Hari Ini</button>
+                            </div>
+                        </div>
+
+                        <!-- Legend -->
+                        <div class="mb-3 d-flex gap-3 flex-wrap">
+                            <div class="d-flex align-items-center">
+                                <span class="badge bg-primary me-2">■</span>
+                                <small>Terjadwal</small>
+                            </div>
+                            <div class="d-flex align-items-center">
+                                <span class="badge bg-success me-2">■</span>
+                                <small>Dipublikasi</small>
+                            </div>
+                            <div class="d-flex align-items-center">
+                                <span class="badge bg-warning me-2">■</span>
+                                <small>Draft</small>
+                            </div>
+                            <div class="d-flex align-items-center">
+                                <span class="badge bg-info me-2">■</span>
+                                <small>Dihasilkan</small>
+                            </div>
+                        </div>
+
+                        <!-- Calendar Grid -->
+                        <div class="calendar-grid" id="calendarGrid">
+                            <div class="calendar-header">
+                                <div class="calendar-day-name">Min</div>
+                                <div class="calendar-day-name">Sen</div>
+                                <div class="calendar-day-name">Sel</div>
+                                <div class="calendar-day-name">Rab</div>
+                                <div class="calendar-day-name">Kam</div>
+                                <div class="calendar-day-name">Jum</div>
+                                <div class="calendar-day-name">Sab</div>
+                            </div>
+                            <div id="calendarDays" class="calendar-days">
+                                <!-- Calendar days will be rendered here -->
+                            </div>
+                        </div>
+
+                        <!-- Selected Date Details -->
+                        <div class="card border-0 shadow-sm mt-4" id="selectedDateDetails" style="display: none;">
+                            <div class="card-body">
+                                <h6 class="mb-3" id="selectedDateTitle"></h6>
+                                <div id="selectedDateContent">
+                                    <!-- Content for selected date will appear here -->
+                                </div>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -4465,6 +5150,427 @@
                     captions: langContent.captions || []
                 };
             }
+
+            // --- SCHEDULER FUNCTIONS ---
+            let schedules = JSON.parse(localStorage.getItem('contentSchedules')) || [];
+
+            window.addSchedule = function() {
+                const contentSelect = document.getElementById('scheduleContentSelect');
+                const platform = document.getElementById('schedulePlatform').value;
+                const status = document.getElementById('scheduleStatus').value;
+                const date = document.getElementById('scheduleDate').value;
+                const time = document.getElementById('scheduleTime').value;
+                const note = document.getElementById('scheduleNote').value;
+
+                if (!contentSelect.value || !date) {
+                    showToast('Error', 'Pilih konten dan tanggal terlebih dahulu', 'error');
+                    return;
+                }
+
+                const history = JSON.parse(localStorage.getItem('generatedHistory')) || [];
+                const content = history[parseInt(contentSelect.value)];
+
+                const schedule = {
+                    id: Date.now(),
+                    content: content.content.substring(0, 100) + '...',
+                    fullContent: content.content,
+                    platform,
+                    status,
+                    datetime: `${date}T${time}`,
+                    note,
+                    createdAt: new Date().toISOString()
+                };
+
+                schedules.push(schedule);
+                localStorage.setItem('contentSchedules', JSON.stringify(schedules));
+
+                loadSchedules();
+                updateScheduleStats();
+                renderCalendar();
+                showToast('Berhasil', 'Jadwal berhasil ditambahkan', 'success');
+
+                // Reset form
+                contentSelect.value = '';
+                document.getElementById('scheduleDate').value = '';
+                document.getElementById('scheduleNote').value = '';
+            };
+
+            window.loadSchedules = function(filter = 'all') {
+                const listEl = document.getElementById('scheduleList');
+                let filtered = [...schedules];
+
+                const now = new Date();
+                const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+                const weekFromNow = new Date(today);
+                weekFromNow.setDate(weekFromNow.getDate() + 7);
+
+                if (filter === 'today') {
+                    filtered = schedules.filter(s => {
+                        const scheduleDate = new Date(s.datetime);
+                        return scheduleDate.toDateString() === today.toDateString();
+                    });
+                } else if (filter === 'week') {
+                    filtered = schedules.filter(s => {
+                        const scheduleDate = new Date(s.datetime);
+                        return scheduleDate >= today && scheduleDate < weekFromNow;
+                    });
+                }
+
+                if (filtered.length === 0) {
+                    listEl.innerHTML = '<p class="text-muted text-center">Tidak ada jadwal</p>';
+                    return;
+                }
+
+                listEl.innerHTML = filtered.sort((a, b) => new Date(a.datetime) - new Date(b.datetime))
+                    .map(schedule => `
+                        <div class="schedule-item ${schedule.status}">
+                            <div class="schedule-header">
+                                <div>
+                                    <div class="schedule-title">
+                                        <span class="platform-badge ${schedule.platform}">
+                                            <i class="bi bi-${schedule.platform === 'facebook' ? 'facebook' : schedule.platform === 'instagram' ? 'instagram' : schedule.platform === 'twitter' ? 'twitter' : schedule.platform === 'linkedin' ? 'linkedin' : 'music-note'} "></i>
+                                            ${schedule.platform.charAt(0).toUpperCase() + schedule.platform.slice(1)}
+                                        </span>
+                                    </div>
+                                    <div class="schedule-meta">
+                                        <span><i class="bi bi-calendar3"></i>${new Date(schedule.datetime).toLocaleDateString('id-ID')}</span>
+                                        <span><i class="bi bi-clock"></i>${new Date(schedule.datetime).toLocaleTimeString('id-ID', {hour: '2-digit', minute: '2-digit'})}</span>
+                                        <span class="badge badge-sm ${schedule.status === 'published' ? 'bg-success' : schedule.status === 'scheduled' ? 'bg-primary' : 'bg-warning'}">${schedule.status === 'published' ? 'Dipublikasi' : schedule.status === 'scheduled' ? 'Terjadwal' : 'Draft'}</span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="schedule-content">${schedule.content}</div>
+                            ${schedule.note ? `<div class="small text-muted"><i class="bi bi-sticky"></i> ${schedule.note}</div>` : ''}
+                            <div class="schedule-actions">
+                                <button class="btn btn-sm btn-outline-primary" onclick="viewSchedule(${schedule.id})"><i class="bi bi-eye"></i></button>
+                                <button class="btn btn-sm btn-outline-success" onclick="editSchedule(${schedule.id})"><i class="bi bi-pencil"></i></button>
+                                <button class="btn btn-sm btn-outline-danger" onclick="deleteSchedule(${schedule.id})"><i class="bi bi-trash"></i></button>
+                            </div>
+                        </div>
+                    `).join('');
+            };
+
+            window.filterSchedule = function(filter) {
+                loadSchedules(filter);
+            };
+
+            window.updateScheduleStats = function() {
+                const now = new Date();
+                const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+
+                const totalCount = schedules.length;
+                const todayCount = schedules.filter(s => {
+                    const scheduleDate = new Date(s.datetime);
+                    return scheduleDate.toDateString() === today.toDateString();
+                }).length;
+                const publishedCount = schedules.filter(s => s.status === 'published').length;
+
+                if (document.getElementById('scheduleTotalCount')) {
+                    document.getElementById('scheduleTotalCount').textContent = totalCount;
+                    document.getElementById('scheduleTodayCount').textContent = todayCount;
+                    document.getElementById('schedulePublishedCount').textContent = publishedCount;
+                }
+            };
+
+            window.deleteSchedule = function(id) {
+                if (confirm('Hapus jadwal ini?')) {
+                    schedules = schedules.filter(s => s.id !== id);
+                    localStorage.setItem('contentSchedules', JSON.stringify(schedules));
+                    loadSchedules();
+                    updateScheduleStats();
+                    renderCalendar();
+                    showToast('Berhasil', 'Jadwal berhasil dihapus', 'success');
+                }
+            };
+
+            window.viewSchedule = function(id) {
+                const schedule = schedules.find(s => s.id === id);
+                if (schedule) {
+                    alert(`Platform: ${schedule.platform}\nWaktu: ${new Date(schedule.datetime).toLocaleString('id-ID')}\n\n${schedule.fullContent}`);
+                }
+            };
+
+            window.editSchedule = function(id) {
+                const schedule = schedules.find(s => s.id === id);
+                if (schedule) {
+                    // Switch to scheduler tab and populate form
+                    document.getElementById('scheduler-tab').click();
+                    const datetime = new Date(schedule.datetime);
+                    document.getElementById('schedulePlatform').value = schedule.platform;
+                    document.getElementById('scheduleStatus').value = schedule.status;
+                    document.getElementById('scheduleDate').value = datetime.toISOString().split('T')[0];
+                    document.getElementById('scheduleTime').value = datetime.toTimeString().substr(0,5);
+                    document.getElementById('scheduleNote').value = schedule.note || '';
+                }
+            };
+
+            // --- OPTIMIZER FUNCTIONS ---
+            window.loadContentToOptimizer = function() {
+                const select = document.getElementById('optimizerContentSelect');
+                const textarea = document.getElementById('optimizerInput');
+
+                if (select.value) {
+                    const history = JSON.parse(localStorage.getItem('generatedHistory')) || [];
+                    const content = history[parseInt(select.value)];
+                    textarea.value = content.content;
+                    analyzeContentQuality(content.content);
+                }
+            };
+
+            window.optimizeContent = async function() {
+                const input = document.getElementById('optimizerInput').value;
+                if (!input.trim()) {
+                    showToast('Error', 'Masukkan konten yang akan dioptimalkan', 'error');
+                    return;
+                }
+
+                const apiKey = document.getElementById('apiKey').value;
+                if (!apiKey) {
+                    showToast('Error', 'Masukkan API Key terlebih dahulu di tab Generator', 'error');
+                    return;
+                }
+
+                const optGrammar = document.getElementById('optGrammar').checked;
+                const optEngagement = document.getElementById('optEngagement').checked;
+                const optSEO = document.getElementById('optSEO').checked;
+                const optReadability = document.getElementById('optReadability').checked;
+                const optEmoji = document.getElementById('optEmoji').checked;
+                const optCTA = document.getElementById('optCTA').checked;
+                const platform = document.getElementById('optimizerPlatform').value;
+
+                const optimizations = [];
+                if (optGrammar) optimizations.push('perbaiki tata bahasa dan ejaan');
+                if (optEngagement) optimizations.push('tingkatkan engagement dan daya tarik');
+                if (optSEO) optimizations.push('optimalkan untuk SEO');
+                if (optReadability) optimizations.push('tingkatkan readability');
+                if (optEmoji) optimizations.push('tambahkan emoji yang relevan');
+                if (optCTA) optimizations.push('perkuat call-to-action');
+
+                const prompt = `Optimalkan konten berikut untuk platform ${platform}. Lakukan optimasi: ${optimizations.join(', ')}.
+
+Konten asli:
+${input}
+
+Berikan konten yang sudah dioptimalkan tanpa penjelasan tambahan.`;
+
+                try {
+                    showLoadingSpinner(true);
+                    const optimized = await generateContentWithAPI(prompt, apiKey);
+
+                    document.getElementById('optimizedContent').innerHTML = `<pre class="preview-text">${optimized}</pre>`;
+                    document.getElementById('originalComparison').innerHTML = `<pre class="preview-text">${input}</pre>`;
+                    document.getElementById('optimizedComparison').innerHTML = `<pre class="preview-text">${optimized}</pre>`;
+                    document.getElementById('optimizerResult').style.display = 'block';
+
+                    analyzeContentQuality(optimized, true);
+                    showToast('Berhasil', 'Konten berhasil dioptimalkan', 'success');
+                } catch (error) {
+                    showToast('Error', 'Gagal mengoptimalkan konten: ' + error.message, 'error');
+                } finally {
+                    showLoadingSpinner(false);
+                }
+            };
+
+            window.analyzeContentQuality = function(content, isOptimized = false) {
+                const words = content.split(/\s+/).length;
+                const sentences = content.split(/[.!?]+/).length;
+                const avgWordLength = content.replace(/\s/g, '').length / words;
+
+                // Simple quality metrics
+                const grammarScore = Math.min(100, 60 + Math.random() * 30 + (isOptimized ? 10 : 0));
+                const engagementScore = Math.min(100, 50 + (content.match(/[!?]/g) || []).length * 5 + (isOptimized ? 15 : 0));
+                const readabilityScore = Math.min(100, 70 - (avgWordLength * 5) + (isOptimized ? 10 : 0));
+                const seoScore = Math.min(100, 40 + words / 2 + (isOptimized ? 20 : 0));
+
+                const overallScore = Math.round((grammarScore + engagementScore + readabilityScore + seoScore) / 4);
+
+                document.getElementById('qualityScore').textContent = overallScore;
+                document.getElementById('grammarScore').textContent = Math.round(grammarScore);
+                document.getElementById('engagementScore').textContent = Math.round(engagementScore);
+                document.getElementById('readabilityScore').textContent = Math.round(readabilityScore);
+                document.getElementById('seoScore').textContent = Math.round(seoScore);
+
+                const circle = document.getElementById('qualityCircle');
+                const offset = 314 - (314 * overallScore / 100);
+                circle.style.strokeDashoffset = offset;
+
+                // Generate AI suggestions
+                const suggestions = [];
+                if (grammarScore < 70) suggestions.push('Periksa tata bahasa dan ejaan');
+                if (engagementScore < 60) suggestions.push('Tambahkan lebih banyak pertanyaan atau seruan');
+                if (readabilityScore < 65) suggestions.push('Gunakan kalimat yang lebih pendek');
+                if (seoScore < 50) suggestions.push('Tambahkan keyword yang relevan');
+                if (words < 50) suggestions.push('Perpanjang konten untuk hasil lebih baik');
+
+                document.getElementById('aiSuggestions').innerHTML = suggestions.length > 0
+                    ? '<ul class="mb-0">' + suggestions.map(s => `<li>${s}</li>`).join('') + '</ul>'
+                    : '<p class="text-success mb-0">Konten sudah bagus!</p>';
+            };
+
+            window.copyOptimizedContent = function() {
+                const content = document.getElementById('optimizedContent').textContent;
+                navigator.clipboard.writeText(content);
+                showToast('Berhasil', 'Konten berhasil disalin', 'success');
+            };
+
+            window.toggleComparison = function() {
+                const comparisonView = document.getElementById('comparisonView');
+                comparisonView.style.display = comparisonView.style.display === 'none' ? 'block' : 'none';
+            };
+
+            // --- CALENDAR FUNCTIONS ---
+            let currentCalendarDate = new Date();
+            let selectedDate = null;
+
+            window.renderCalendar = function() {
+                const year = currentCalendarDate.getFullYear();
+                const month = currentCalendarDate.getMonth();
+
+                // Update month display
+                const monthNames = ['Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni',
+                                   'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember'];
+                if (document.getElementById('currentMonth')) {
+                    document.getElementById('currentMonth').textContent = `${monthNames[month]} ${year}`;
+                }
+
+                const firstDay = new Date(year, month, 1);
+                const lastDay = new Date(year, month + 1, 0);
+                const prevLastDay = new Date(year, month, 0);
+
+                const firstDayOfWeek = firstDay.getDay();
+                const lastDateOfMonth = lastDay.getDate();
+                const prevLastDate = prevLastDay.getDate();
+
+                const daysContainer = document.getElementById('calendarDays');
+                if (!daysContainer) return;
+
+                let days = '';
+
+                // Previous month days
+                for (let i = firstDayOfWeek; i > 0; i--) {
+                    days += `<div class="calendar-day other-month">
+                        <div class="calendar-day-number">${prevLastDate - i + 1}</div>
+                    </div>`;
+                }
+
+                // Current month days
+                const today = new Date();
+                for (let i = 1; i <= lastDateOfMonth; i++) {
+                    const currentDate = new Date(year, month, i);
+                    const dateStr = currentDate.toISOString().split('T')[0];
+                    const isToday = currentDate.toDateString() === today.toDateString();
+                    const isSelected = selectedDate && currentDate.toDateString() === selectedDate.toDateString();
+
+                    // Get events for this date
+                    const daySchedules = schedules.filter(s => s.datetime.startsWith(dateStr));
+                    const history = JSON.parse(localStorage.getItem('generatedHistory')) || [];
+                    const dayGenerated = history.filter(h => h.timestamp && h.timestamp.startsWith(dateStr));
+
+                    let events = '';
+                    daySchedules.forEach(s => {
+                        events += `<div class="calendar-event ${s.status}">${s.platform}</div>`;
+                    });
+                    if (dayGenerated.length > 0) {
+                        events += `<div class="calendar-event generated">${dayGenerated.length} konten</div>`;
+                    }
+
+                    days += `<div class="calendar-day ${isToday ? 'today' : ''} ${isSelected ? 'selected' : ''}" onclick="selectDate('${dateStr}')">
+                        <div class="calendar-day-number">${i}</div>
+                        ${events}
+                    </div>`;
+                }
+
+                // Next month days
+                const remainingDays = 42 - (firstDayOfWeek + lastDateOfMonth);
+                for (let i = 1; i <= remainingDays; i++) {
+                    days += `<div class="calendar-day other-month">
+                        <div class="calendar-day-number">${i}</div>
+                    </div>`;
+                }
+
+                daysContainer.innerHTML = days;
+            };
+
+            window.changeMonth = function(delta) {
+                currentCalendarDate.setMonth(currentCalendarDate.getMonth() + delta);
+                renderCalendar();
+            };
+
+            window.goToToday = function() {
+                currentCalendarDate = new Date();
+                renderCalendar();
+            };
+
+            window.setCalendarView = function(view) {
+                // This can be expanded for week view
+                if (view === 'month') {
+                    renderCalendar();
+                }
+            };
+
+            window.selectDate = function(dateStr) {
+                selectedDate = new Date(dateStr + 'T00:00:00');
+                renderCalendar();
+
+                const daySchedules = schedules.filter(s => s.datetime.startsWith(dateStr));
+                const history = JSON.parse(localStorage.getItem('generatedHistory')) || [];
+                const dayGenerated = history.filter(h => h.timestamp && h.timestamp.startsWith(dateStr));
+
+                const detailsEl = document.getElementById('selectedDateDetails');
+                const titleEl = document.getElementById('selectedDateTitle');
+                const contentEl = document.getElementById('selectedDateContent');
+
+                if (daySchedules.length === 0 && dayGenerated.length === 0) {
+                    detailsEl.style.display = 'none';
+                    return;
+                }
+
+                titleEl.textContent = `Konten untuk ${selectedDate.toLocaleDateString('id-ID', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}`;
+
+                let content = '';
+                if (daySchedules.length > 0) {
+                    content += '<h6 class="mt-3">Terjadwal:</h6>';
+                    daySchedules.forEach(s => {
+                        content += `<div class="mb-2 p-2 border rounded">
+                            <strong>${s.platform}</strong> - ${new Date(s.datetime).toLocaleTimeString('id-ID', {hour: '2-digit', minute: '2-digit'})}
+                            <div class="small text-muted">${s.content}</div>
+                        </div>`;
+                    });
+                }
+
+                if (dayGenerated.length > 0) {
+                    content += `<h6 class="mt-3">Konten Dihasilkan (${dayGenerated.length}):</h6>`;
+                    dayGenerated.slice(0, 3).forEach(g => {
+                        content += `<div class="mb-2 p-2 border rounded">
+                            <div class="small">${g.content.substring(0, 100)}...</div>
+                        </div>`;
+                    });
+                }
+
+                contentEl.innerHTML = content;
+                detailsEl.style.display = 'block';
+            };
+
+            // Initialize scheduler content select and calendar on tab switch
+            document.getElementById('scheduler-tab').addEventListener('click', function() {
+                const history = JSON.parse(localStorage.getItem('generatedHistory')) || [];
+                const select = document.getElementById('scheduleContentSelect');
+                select.innerHTML = '<option value="">Pilih dari riwayat...</option>' +
+                    history.map((item, index) => `<option value="${index}">${item.content.substring(0, 50)}...</option>`).join('');
+                loadSchedules();
+                updateScheduleStats();
+            });
+
+            document.getElementById('optimizer-tab').addEventListener('click', function() {
+                const history = JSON.parse(localStorage.getItem('generatedHistory')) || [];
+                const select = document.getElementById('optimizerContentSelect');
+                select.innerHTML = '<option value="">Pilih dari riwayat...</option>' +
+                    history.map((item, index) => `<option value="${index}">${item.content.substring(0, 50)}...</option>`).join('');
+            });
+
+            document.getElementById('calendar-tab').addEventListener('click', function() {
+                renderCalendar();
+            });
         });
     </script>
 </body>
